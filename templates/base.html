@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -9,7 +10,12 @@
 <div class="d-flex">
     <!-- Thanh menu bên trái (Sidebar) -->
     <div class="bg-dark text-white p-3 vh-100" style="width: 260px; position: fixed;">
-        <h4 class="text-warning fw-bold mb-4">SUNBABY SPA</h4>
+
+        <!-- THAY THẾ CHỮ BẰNG LOGO Ở ĐÂY -->
+        <div class="text-center mb-4 pt-2">
+            <img src="{% static 'images/logo (3).png' %}" alt="Sunbaby Spa" class="img-fluid rounded" style="max-height: 150px; object-fit: contain;">
+        </div>
+
         <ul class="nav nav-pills flex-column mb-auto gap-2">
             <li class="nav-item"><a href="/management/dashboard/" class="nav-link text-white">📊 Tổng quan (Dashboard)</a></li>
             <li class="nav-item"><a href="/inventory/" class="nav-link text-white">📦 Kho & Nhập hàng</a></li>
@@ -20,7 +26,7 @@
         </ul>
     </div>
 
-    <!-- Nội dung chính bên phải -->
+    <!-- Nội dung chính bên phía phải -->
     <div class="flex-grow-1 p-4" style="margin-left: 260px;">
         {% block content %}
         {% endblock %}
