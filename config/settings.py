@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     'services',
     'operations',
     'management',
+    'django.contrib.humanize',
+    'kho',
 ]
 
 MIDDLEWARE = [
@@ -102,6 +104,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+USE_THOUSAND_SEPARATOR = True
 
 
 # Static files (CSS, JavaScript, Images)
