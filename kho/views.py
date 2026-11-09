@@ -43,7 +43,7 @@ def index(request):
         moc = xuat.ngay.date() if xuat else (nhap.ngay.date() if nhap else hom_nay)
         if (hom_nay - moc).days >= 45:
             canh_bao.append((vat_tu, (hom_nay - moc).days))
-    return render(request, "kho/index.html", {"items": Paginator(vat_tus.order_by("sku"), 12).get_page(request.GET.get("page")), "q": q, "nhoms": NhomVatTu.objects.all(), "nccs": NhaCungCap.objects.all(), "n_vattu": VatTu.objects.count(), "n_ncc": NhaCungCap.objects.count(), "low": VatTu.objects.filter(ton_kha_dung__lt=F("ton_toi_thieu")).count(), "phieus": PhieuNhap.objects.select_related("ncc", "nguoi_nhap").order_by("-ngay_nhap"), "canh_bao": canh_bao, "lo_han": DongPhieuNhap.objects.filter(han_su_dung__range=(hom_nay, hom_nay + timedelta(days=30)))})
+    return render(request, "kho/index_v2.html", {"items": Paginator(vat_tus.order_by("sku"), 12).get_page(request.GET.get("page")), "q": q, "nhoms": NhomVatTu.objects.all(), "nccs": NhaCungCap.objects.all(), "n_vattu": VatTu.objects.count(), "n_ncc": NhaCungCap.objects.count(), "low": VatTu.objects.filter(ton_kha_dung__lt=F("ton_toi_thieu")).count(), "phieus": PhieuNhap.objects.select_related("ncc", "nguoi_nhap").order_by("-ngay_nhap"), "canh_bao": canh_bao, "lo_han": DongPhieuNhap.objects.filter(han_su_dung__range=(hom_nay, hom_nay + timedelta(days=30)))})
 
 
 @quyen

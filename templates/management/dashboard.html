@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-4 fw-bold">Bảng điều khiển Tổng quan - Sunbaby Spa</h2>
+<div class="row g-4">
+    <div class="col-md-3">
+        <div class="card text-bg-primary shadow-sm p-3">
+            <h5>Tổng danh mục vật tư</h5>
+            <h2 class="fw-bold">{{ total_items }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-success shadow-sm p-3">
+            <h5>Lượt khách phục vụ</h5>
+            <h2 class="fw-bold">{{ total_orders }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-warning shadow-sm p-3">
+            <h5>Đơn PO chờ duyệt</h5>
+            <h2 class="fw-bold">{{ pending_po }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-danger shadow-sm p-3">
+            <h5>Báo cáo hao hụt</h5>
+            <h2 class="fw-bold">{{ damage_count }}</h2>
+        </div>
+    </div>
+</div>
+{% endblock %}

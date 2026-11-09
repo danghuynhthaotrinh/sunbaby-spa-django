@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Sunbaby Spa - Quản lý Kho & Vận hành</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="d-flex">
+    <!-- Thanh menu bên trái (Sidebar) -->
+    <div class="bg-dark text-white p-3 vh-100" style="width: 260px; position: fixed;">
+        <h4 class="text-warning fw-bold mb-4">SUNBABY SPA</h4>
+        <ul class="nav nav-pills flex-column mb-auto gap-2">
+            <li class="nav-item"><a href="/management/dashboard/" class="nav-link text-white">📊 Tổng quan (Dashboard)</a></li>
+            <li class="nav-item"><a href="/inventory/" class="nav-link text-white">📦 Kho & Nhập hàng</a></li>
+            <li class="nav-item"><a href="/services/" class="nav-link text-white">💆‍♀️ Dịch vụ & Định mức BOM</a></li>
+            <li class="nav-item"><a href="/operations/" class="nav-link text-white">🧺 Vận hành & Khăn</a></li>
+            <li class="nav-item"><a href="/management/" class="nav-link text-white">⚠️ Báo hỏng & Đặt hàng PO</a></li>
+            <li class="nav-item mt-4"><a href="/admin/" class="nav-link text-info">⚙️ Trang Quản trị Admin</a></li>
+        </ul>
+    </div>
+
+    <!-- Nội dung chính bên phải -->
+    <div class="flex-grow-1 p-4" style="margin-left: 260px;">
+        {% block content %}
+        {% endblock %}
+    </div>
+</div>
+</body>
+</html>
