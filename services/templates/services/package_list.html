@@ -1,0 +1,49 @@
+{% extends "services/_layout.html" %}
+{% load humanize %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center">
+  <h2>Tạo gói &amp; Thiết lập BOM</h2>
+  <a class="btn primary" href="{% url 'services:package_create' %}">+ Thêm gói dịch vụ</a>
+</div>
+
+<form method="get" style="margin-bottom:12px">
+  <input name="q" value="{{ q }}" placeholder="Tìm mã hoặc tên gói">
+  <select name="tt" onchange="this.form.submit()">
+    <option value="">Tất cả trạng thái</option>
+    <option value="dang_ban" {% if tt == 'dang_ban' %}selected{% endif %}>Hoạt động</option>
+    <option value="ngung" {% if tt == 'ngung' %}selected{% endif %}>Ngừng hoạt động</option>
+  </select>
+  <button class="btn">Tìm</button>
+</form>
+
+<table>
+  <tr><th>Mã gói</th><th>Tên gói</th><th>Giá bán</th><th>Mô tả</th><th>Trạng thái</th><th>Thao tác</th></tr>
+  {% for g in page %}
+  <tr>
+    <td><b>{{ g.ma_goi }}</b></td>
+    <td>{{ g.ten }}</td>
+    <td>{{ g.gia_ban|intcomma }}đ</td>
+    <td>{{ g.mo_ta|default:"—" }}</td>
+    <td><span class="pill {% if g.dang_ban %}ok{% else %}off{% endif %}">
+        {% if g.dang_ban %}Hoạt động{% else %}Ngừng hoạt động{% endif %}</span></td>
+    <td>
+      <a class="btn" href="{% url 'services:package_edit' g.pk %}">Sửa</a>
+      <a class="btn" href="{% url 'services:bom_config' g.pk %}">Cấu hình BOM</a>
+      <form method="post" action="{% url 'services:package_toggle' g.pk %}" style="display:inline"
+            onsubmit="return confirm('Xác nhận đổi trạng thái gói này?')">
+        {% csrf_token %}
+        <button class="btn">{% if g.dang_ban %}Ngừng hoạt động{% else %}Kích hoạt{% endif %}</button>
+      </form>
+    </td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="6">Không tìm thấy gói dịch vụ nào.</td></tr>
+  {% endfor %}
+</table>
+
+<p>
+  {% if page.has_previous %}<a class="btn" href="?q={{ q }}&tt={{ tt }}&page={{ page.previous_page_number }}">‹</a>{% endif %}
+  Trang {{ page.number }}/{{ page.paginator.num_pages }}
+  {% if page.has_next %}<a class="btn" href="?q={{ q }}&tt={{ tt }}&page={{ page.next_page_number }}">›</a>{% endif %}
+</p>
+{% endblock %}

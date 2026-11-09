@@ -1,0 +1,22 @@
+{% extends "services/_layout.html" %}
+{% load humanize %}
+{% block content %}
+<h2>Chi tiết giá vốn: {{ goi.ma_goi }} · {{ goi.ten }}</h2>
+<table>
+  <tr><th>Vật tư</th><th>Định mức</th><th>Đơn giá vốn</th><th>Thành tiền</th></tr>
+  {% for d in dong_list %}
+  <tr>
+    <td>{{ d.vat_tu }}</td>
+    <td>{{ d.dinh_luong|floatformat:"-2" }}</td>
+    <td>{% if d.thieu_don_gia %}<span class="pill warn">Thiếu đơn giá</span>
+        {% else %}{{ d.gia_von_don_vi|floatformat:0|intcomma }}đ{% endif %}</td>
+    <td>{{ d.chi_phi_dong|floatformat:0|intcomma }}đ</td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="4"><span class="pill warn">Chưa cấu hình BOM</span></td></tr>
+  {% endfor %}
+</table>
+<p><b>Tổng giá vốn: {{ goi.chi_phi_nguyen_vat|floatformat:0|intcomma }}đ</b>
+   {% if goi.ty_le_gia_von is not None %}({{ goi.ty_le_gia_von }}% giá bán){% endif %}</p>
+<a class="btn" href="{% url 'services:cost_list' %}">← Quay lại</a>
+{% endblock %}

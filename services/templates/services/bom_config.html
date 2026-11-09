@@ -1,0 +1,51 @@
+{% extends "services/_layout.html" %}
+{% load humanize %}
+{% block content %}
+<h2>Cấu hình BOM</h2>
+<p>{{ goi.ma_goi }} · {{ goi.ten }}</p>
+
+<form method="post">
+  {% csrf_token %}
+  {{ formset.management_form }}
+  {% if formset.non_form_errors %}<div class="err">{{ formset.non_form_errors }}</div>{% endif %}
+
+  <table>
+    <thead><tr><th>Vật tư</th><th>Định mức (ĐV chuẩn)</th><th>Xóa</th></tr></thead>
+    <tbody id="bom-body">
+      {% for form in formset %}
+      <tr>
+        <td>{% for h in form.hidden_fields %}{{ h }}{% endfor %}
+            {{ form.vat_tu }}{{ form.vat_tu.errors }}</td>
+        <td>{{ form.dinh_luong }}{{ form.dinh_luong.errors }}</td>
+        <td>{% if form.instance.pk %}{{ form.DELETE }}{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p>
+    <button type="button" class="btn" id="them-vat-tu">+ Thêm vật tư</button>
+    <b style="margin-left:20px">Giá vốn hiện tại: {{ goi.chi_phi_nguyen_vat|floatformat:0|intcomma }}đ</b>
+  </p>
+  <button class="btn primary">Lưu BOM</button>
+  <a class="btn" href="{% url 'services:package_list' %}">Hủy</a>
+</form>
+
+<template id="empty-row">
+  <tr>
+    <td>{% for h in formset.empty_form.hidden_fields %}{{ h }}{% endfor %}{{ formset.empty_form.vat_tu }}</td>
+    <td>{{ formset.empty_form.dinh_luong }}</td>
+    <td></td>
+  </tr>
+</template>
+
+<script>
+document.getElementById("them-vat-tu").addEventListener("click", () => {
+  const total = document.getElementById("id_{{ formset.prefix }}-TOTAL_FORMS");
+  const html = document.getElementById("empty-row").innerHTML
+                       .replaceAll("__prefix__", total.value);
+  document.getElementById("bom-body").insertAdjacentHTML("beforeend", html);
+  total.value = parseInt(total.value) + 1;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Gói dịch vụ & BOM{% endblock %}</title>
+  <style>
+    body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#fff8e8;color:#2b2b2b}
+    nav.top{background:#d9a441;padding:12px 24px;font-weight:600;color:#fff}
+    nav.top a{color:#fff;text-decoration:none;margin-right:18px}
+    main{max-width:1100px;margin:20px auto;padding:0 16px}
+    .tabs{display:inline-flex;gap:6px;background:#f3e0a8;padding:6px;border-radius:10px;margin-bottom:16px}
+    .tabs a{padding:8px 16px;border-radius:8px;text-decoration:none;color:#5a4410}
+    .tabs a.on{background:#fff;font-weight:600}
+    table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden}
+    th{background:#fbefc8;text-align:left;font-size:13px}
+    th,td{padding:10px 12px;border-bottom:1px solid #f0e6cc}
+    .btn{display:inline-block;padding:6px 12px;border:1px solid #d9a441;border-radius:8px;
+         background:#fff;color:#7a5a10;text-decoration:none;cursor:pointer;font-size:13px}
+    .btn.primary{background:#a8741a;color:#fff;border-color:#a8741a}
+    .pill{padding:3px 10px;border-radius:12px;font-size:12px}
+    .ok{background:#e0f5e4;color:#1d7a35}.off{background:#eee;color:#777}
+    .warn{background:#fde8c8;color:#9a5a00}
+    .msg{padding:10px 14px;border-radius:8px;background:#e0f5e4;margin-bottom:12px}
+    .err,.errorlist{color:#b3261e;font-size:13px;list-style:none;padding:0;margin:4px 0}
+    .cards{display:flex;gap:16px;flex-wrap:wrap}
+    .card{flex:1;min-width:240px;background:#fff;padding:20px;border-radius:14px}
+    input,select,textarea{padding:7px;border:1px solid #ddd;border-radius:8px}
+  </style>
+</head>
+<body>
+<nav class="top">
+  <a href="{% url 'services:home' %}">Hệ thống Quản lý dịch vụ</a>
+  <a href="{% url 'services:package_list' %}">Gói dịch vụ</a>
+</nav>
+<main>
+  {% for m in messages %}<div class="msg">{{ m }}</div>{% endfor %}
+  {% if tab %}
+  <div class="tabs">
+    <a href="{% url 'services:package_list' %}" class="{% if tab == 'goi' %}on{% endif %}">Tạo gói & Thiết lập BOM</a>
+    <a href="{% url 'services:cost_list' %}" class="{% if tab == 'cost' %}on{% endif %}">Đơn giá vốn lý thuyết</a>
+  </div>
+  {% endif %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>
