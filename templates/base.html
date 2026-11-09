@@ -13,7 +13,7 @@
 
         <!-- THAY THẾ CHỮ BẰNG LOGO Ở ĐÂY -->
         <div class="text-center mb-4 pt-2">
-            <img src="{% static 'images/logo (3).png' %}" alt="Sunbaby Spa" class="img-fluid rounded" style="max-height: 150px; object-fit: contain;">
+            <img src="{% static 'images/logo (3).png' %}" alt="Sunbaby Spa" class="img-fluid rounded" style="height: 120px; object-fit: contain;">
         </div>
 
         <ul class="nav nav-pills flex-column mb-auto gap-2">
@@ -23,6 +23,22 @@
             <li class="nav-item"><a href="/operations/" class="nav-link text-white">🧺 Vận hành & Khăn</a></li>
             <li class="nav-item"><a href="/management/" class="nav-link text-white">⚠️ Báo hỏng & Đặt hàng PO</a></li>
             <li class="nav-item mt-4"><a href="/admin/" class="nav-link text-info">⚙️ Trang Quản trị Admin</a></li>
+</li>
+<hr>
+{% if request.user.is_superuser or request.user.role == 'QUAN_LY' or request.user.role == 'ADMIN' %}
+<li class="nav-item">
+    <a href="{% url 'user_list' %}" class="nav-link text-white">👥 Quản lý phân quyền</a>
+</li>
+{% endif %}
+
+<hr class="text-secondary">
+<li class="nav-item">
+    <div class="small text-secondary mb-2">
+        Tài khoản: <strong class="text-white">{{ request.user.username }}</strong>
+        <span class="badge bg-secondary ms-1">{{ request.user.get_role_display }}</span>
+    </div>
+    <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm w-100">🚪 Đăng xuất</a>
+</li>
         </ul>
     </div>
 

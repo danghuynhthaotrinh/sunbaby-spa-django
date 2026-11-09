@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="alert alert-danger d-inline-block p-4 shadow-sm">
+        <h4 class="fw-bold mb-2">🚫 Bạn không đủ quyền truy cập</h4>
+        <p class="mb-3">Chức năng quản trị tài khoản chỉ dành riêng cho Admin (BR1).</p>
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Quay về Bảng điều khiển</a>
+    </div>
+</div>
+{% endblock %}

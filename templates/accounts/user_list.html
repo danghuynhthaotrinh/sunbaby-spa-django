@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">👤 Quản lý phân quyền</h2>
+        <a href="{% url 'user_create' %}" class="btn btn-success fw-bold">+ Tạo tài khoản mới</a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Thanh tìm kiếm & lọc (Alternative flow 3a) -->
+    <form method="GET" class="row g-2 mb-4 bg-white p-3 rounded shadow-sm">
+        <div class="col-md-4">
+            <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Tìm theo tên đăng nhập hoặc họ tên...">
+        </div>
+        <div class="col-md-3">
+            <select name="role" class="form-select">
+                <option value="">-- Tất cả vai trò --</option>
+                {% for code, name in role_choices %}
+                    <option value="{{ code }}" {% if role_filter == code %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-select">
+                <option value="">-- Tất cả trạng thái --</option>
+                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Hoạt động</option>
+                <option value="locked" {% if status_filter == 'locked' %}selected{% endif %}>Đã khóa</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-primary">Lọc / Tìm kiếm</button>
+        </div>
+    </form>
+
+    <!-- Bảng danh sách tài khoản -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Tên đăng nhập</th>
+                        <th>Họ và tên</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td class="fw-bold">{{ u.username }}</td>
+                        <td>{{ u.full_name|default:"-" }}</td>
+                        <td><span class="badge bg-info text-dark">{{ u.get_role_display }}</span></td>
+                        <td>
+                            {% if u.is_active %}
+                                <span class="badge bg-success">Hoạt động</span>
+                            {% else %}
+                                <span class="badge bg-danger">Đã khóa</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'user_detail' u.id %}" class="btn btn-sm btn-outline-primary">Phân quyền / Khóa</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">Không tìm thấy tài khoản nào phù hợp.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

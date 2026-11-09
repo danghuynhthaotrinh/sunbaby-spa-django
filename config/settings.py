@@ -31,7 +31,6 @@ INSTALLED_APPS = [
     'operations',
     'management',
     'django.contrib.humanize',
-    'kho',
 ]
 
 MIDDLEWARE = [
