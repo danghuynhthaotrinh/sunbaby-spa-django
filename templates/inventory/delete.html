@@ -1,0 +1,1 @@
+{% extends "base.html" %}{% block content %}<div class="container"><div class="card p-4"><h2>Xác nhận xóa</h2><p>Bạn có chắc muốn xóa {{obj}}?</p><form method="post">{% csrf_token %}<button class="btn btn-danger">Xóa</button> <a class="btn btn-secondary" href="{% url 'inventory_home' %}">Hủy</a></form></div></div>{% endblock %}
