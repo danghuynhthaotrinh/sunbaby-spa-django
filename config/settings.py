@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'services',
     'operations',
     'management',
+    'kho',
 ]
 
 MIDDLEWARE = [
