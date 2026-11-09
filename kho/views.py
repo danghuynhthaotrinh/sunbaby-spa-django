@@ -2,99 +2,87 @@
 from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import F, Q
+from django.db.models import Q, F
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from .forms import VatTuForm, NhaCungCapForm, PhieuForm, DongFormSet
-from .models import VatTu, NhaCungCap, NhomVatTu, PhieuNhap, DongPhieuNhap, TheKho
+from inventory.models import Item, Supplier, GoodsReceipt, GoodsReceiptDetail
+from .forms import ItemForm, SupplierForm, ReceiptForm, ReceiptDetailFormSet
+from .models import TheKho
+from .models import CATEGORIES
 
+def access(view):
+ @login_required
+ def wrapped(request,*args,**kwargs):
+  if getattr(request.user,"role","") not in ("MANAGER","ADMIN"): raise PermissionDenied
+  return view(request,*args,**kwargs)
+ return wrapped
 
-def co_quyen(user):
-    return user.is_authenticated and (getattr(user, "role", "") == "MANAGER" or user.groups.filter(name__in=["Quản lý", "Thủ kho"]).exists())
-
-
-def quyen(view):
-    @login_required
-    def wrapped(request, *args, **kwargs):
-        if not co_quyen(request.user):
-            messages.error(request, "Bạn không có quyền truy cập chức năng kho.")
-            return redirect("kho:index")
-        return view(request, *args, **kwargs)
-    return wrapped
-
-
-@quyen
+@access
 def index(request):
-    vat_tus = VatTu.objects.select_related("nhom", "ncc_mac_dinh").all()
-    q = request.GET.get("q", "")
-    if q:
-        vat_tus = vat_tus.filter(Q(sku__icontains=q) | Q(ten__icontains=q))
-    if request.GET.get("nhom"):
-        vat_tus = vat_tus.filter(nhom_id=request.GET["nhom"])
-    if request.GET.get("ncc"):
-        vat_tus = vat_tus.filter(ncc_mac_dinh_id=request.GET["ncc"])
-    hom_nay = timezone.localdate()
-    canh_bao = []
-    for vat_tu in VatTu.objects.filter(ton_kha_dung__gt=0):
-        xuat = vat_tu.the_kho.filter(loai_bien_dong__icontains="xuất").order_by("-ngay").first()
-        nhap = vat_tu.the_kho.filter(loai_bien_dong__icontains="nhập").order_by("-ngay").first()
-        moc = xuat.ngay.date() if xuat else (nhap.ngay.date() if nhap else hom_nay)
-        if (hom_nay - moc).days >= 45:
-            canh_bao.append((vat_tu, (hom_nay - moc).days))
-    return render(request, "kho/index_v2.html", {"items": Paginator(vat_tus.order_by("sku"), 12).get_page(request.GET.get("page")), "q": q, "nhoms": NhomVatTu.objects.all(), "nccs": NhaCungCap.objects.all(), "n_vattu": VatTu.objects.count(), "n_ncc": NhaCungCap.objects.count(), "low": VatTu.objects.filter(ton_kha_dung__lt=F("ton_toi_thieu")).count(), "phieus": PhieuNhap.objects.select_related("ncc", "nguoi_nhap").order_by("-ngay_nhap"), "canh_bao": canh_bao, "lo_han": DongPhieuNhap.objects.filter(han_su_dung__range=(hom_nay, hom_nay + timedelta(days=30)))})
+ qs=Item.objects.select_related("supplier").all()
+ q=request.GET.get("q","")
+ if q: qs=qs.filter(Q(sku__icontains=q)|Q(name__icontains=q))
+ if request.GET.get("nhom"): qs=qs.filter(category=request.GET["nhom"])
+ if request.GET.get("ncc"): qs=qs.filter(supplier_id=request.GET["ncc"])
+ today=timezone.localdate()
+ idle=[]
+ for item in Item.objects.filter(stock__gt=0):
+  last=item.the_kho.filter(loai_bien_dong__icontains="xuất").order_by("-ngay").first()
+  receipt=GoodsReceiptDetail.objects.filter(item=item).order_by("-receipt__created_at").first()
+  date=last.ngay.date() if last else (receipt.receipt.created_at.date() if receipt else today)
+  if (today-date).days>=45: idle.append((item,(today-date).days))
+ return render(request,"kho/index_v2.html",{"items":Paginator(qs.order_by("sku"),15).get_page(request.GET.get("page")),"q":q,"nhoms":CATEGORIES.items(),"nccs":Supplier.objects.all(),"n_vattu":Item.objects.count(),"n_ncc":Supplier.objects.count(),"low":Item.objects.filter(stock__lt=F("min_stock")).count(),"phieus":GoodsReceipt.objects.select_related("supplier","created_by").order_by("-created_at"),"canh_bao":idle,"lo_han":GoodsReceiptDetail.objects.filter(expiry_date__range=(today,today+timedelta(days=30))).select_related("item")})
 
+@access
+def vat_tu_form(request,pk=None):
+ obj=get_object_or_404(Item,pk=pk) if pk else None
+ form=ItemForm(request.POST or None,instance=obj)
+ if form.is_valid(): form.save(); messages.success(request,"Đã lưu vật tư."); return redirect("kho:index")
+ return render(request,"kho/form.html",{"form":form,"title":"Cập nhật vật tư" if obj else "Thêm vật tư"})
 
-@quyen
-def vat_tu_form(request, pk=None):
-    instance = get_object_or_404(VatTu, pk=pk) if pk else None
-    form = VatTuForm(request.POST or None, instance=instance)
-    if form.is_valid():
-        form.save(); messages.success(request, "Đã lưu vật tư."); return redirect("kho:index")
-    return render(request, "kho/form.html", {"form": form, "title": "Cập nhật vật tư" if instance else "Thêm vật tư"})
+@access
+def vat_tu_delete(request,pk):
+ obj=get_object_or_404(Item,pk=pk)
+ if request.method=="POST": obj.delete(); messages.success(request,"Đã xóa vật tư."); return redirect("kho:index")
+ return render(request,"kho/delete.html",{"obj":obj})
 
-
-@quyen
-def vat_tu_delete(request, pk):
-    item = get_object_or_404(VatTu, pk=pk)
-    if request.method == "POST":
-        item.delete(); messages.success(request, "Đã xóa vật tư."); return redirect("kho:index")
-    return render(request, "kho/delete.html", {"obj": item})
-
-
-@quyen
+@access
 def ncc_form(request):
-    form = NhaCungCapForm(request.POST or None)
-    if form.is_valid():
-        form.save(); messages.success(request, "Đã thêm nhà cung cấp."); return redirect("kho:index")
-    return render(request, "kho/form.html", {"form": form, "title": "Thêm nhà cung cấp"})
+ form=SupplierForm(request.POST or None)
+ if form.is_valid(): form.save(); messages.success(request,"Đã lưu nhà cung cấp."); return redirect("kho:index")
+ return render(request,"kho/form.html",{"form":form,"title":"Nhà cung cấp"})
 
-
-@quyen
+@access
 def nhap_kho(request):
-    phieu_moi = PhieuNhap()
-    form = PhieuForm(request.POST or None)
-    formset = DongFormSet(request.POST or None, instance=phieu_moi)
-    if request.method == "POST" and form.is_valid() and formset.is_valid():
-        dong_hang = [dong for dong in formset.save(commit=False) if dong.vat_tu_id and dong.so_luong_nhap]
-        if not dong_hang:
-            messages.error(request, "Phiếu nhập cần có ít nhất một dòng hàng.")
-        elif any(d.so_luong_nhap <= 0 or d.don_gia_mua < 0 or d.vat_tu.ty_le_quy_doi <= 0 for d in dong_hang):
-            messages.error(request, "Số lượng phải dương, đơn giá không âm và tỷ lệ quy đổi phải dương.")
-        else:
-            with transaction.atomic():
-                phieu = form.save(commit=False); phieu.nguoi_nhap = request.user; phieu.save()
-                for dong in dong_hang:
-                    dong.phieu = phieu; dong.save()
-                    vat_tu = VatTu.objects.select_for_update().get(pk=dong.vat_tu_id)
-                    vat_tu.ton_kha_dung += dong.so_luong_quy_doi; vat_tu.don_gia_nhap = dong.don_gia_mua
-                    vat_tu.save(update_fields=["ton_kha_dung", "don_gia_nhap"])
-                    TheKho.objects.create(vat_tu=vat_tu, so_luong=dong.so_luong_quy_doi, ton_cuoi=vat_tu.ton_kha_dung, chung_tu=phieu.ma_phieu)
-            messages.success(request, "Đã nhập kho thành công."); return redirect("kho:phieu", pk=phieu.pk)
-    return render(request, "kho/nhap.html", {"form": form, "formset": formset})
+ form=ReceiptForm(request.POST or None)
+ instance=GoodsReceipt()
+ fs=ReceiptDetailFormSet(request.POST or None,instance=instance)
+ if request.method=="POST" and form.is_valid() and fs.is_valid():
+  rows=[d for d in fs.save(commit=False) if d.item_id and d.import_qty]
+  if not rows: messages.error(request,"Phiếu nhập cần có ít nhất một dòng hàng.")
+  elif any(d.import_qty<=0 or d.import_price<0 or d.item.conversion_rate<=0 for d in rows): messages.error(request,"Số lượng phải dương, đơn giá không âm và tỷ lệ quy đổi phải dương.")
+  else:
+   with transaction.atomic():
+    receipt=form.save(commit=False); receipt.created_by=request.user
+    prefix=f"PN-{timezone.localdate():%Y%m%d}-"
+    last=GoodsReceipt.objects.select_for_update().filter(receipt_code__startswith=prefix).order_by("-receipt_code").first()
+    receipt.receipt_code=f"{prefix}{int(last.receipt_code[-3:])+1 if last else 1:03d}"
+    receipt.total_amount=sum((d.import_qty*d.import_price for d in rows),start=0)
+    receipt.save()
+    for d in rows:
+     d.receipt=receipt; d.conversion_rate=d.item.conversion_rate
+     d.converted_qty=d.import_qty*d.conversion_rate
+     d.save()
+     item=Item.objects.select_for_update().get(pk=d.item_id)
+     item.stock+=d.converted_qty; item.import_price=d.import_price
+     item.save(update_fields=["stock","import_price"])
+     TheKho.objects.create(item=item,so_luong=d.converted_qty,ton_cuoi=item.stock,chung_tu=receipt.receipt_code)
+   return redirect("kho:phieu",pk=receipt.pk)
+ return render(request,"kho/nhap.html",{"form":form,"formset":fs})
 
-
-@quyen
-def phieu_detail(request, pk):
-    return render(request, "kho/phieu.html", {"p": get_object_or_404(PhieuNhap.objects.select_related("ncc", "nguoi_nhap").prefetch_related("dong_hang__vat_tu"), pk=pk)})
+@access
+def phieu_detail(request,pk):
+ return render(request,"kho/phieu.html",{"p":get_object_or_404(GoodsReceipt.objects.select_related("supplier","created_by").prefetch_related("details__item"),pk=pk)})

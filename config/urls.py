@@ -28,6 +28,5 @@ urlpatterns = [
     path('services/', include('services.urls')),
     path('operations/', include('operations.urls')),
     path('management/', include('management.urls')),
-    path('management/', include('management.urls')),
     path('kho/', include('kho.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
