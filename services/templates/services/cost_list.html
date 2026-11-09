@@ -1,0 +1,43 @@
+{% extends "services/_layout.html" %}
+{% load humanize %}
+{% block content %}
+<h2>Đơn giá vốn lý thuyết</h2>
+<p>Giá vốn = tổng định mức × đơn giá vốn của từng vật tư trong BOM.</p>
+
+<table>
+  <tr><th>Mã gói</th><th>Tên gói</th><th>Giá vốn lý thuyết</th><th>Trạng thái tính giá</th><th></th></tr>
+  {% for g in goi_list %}
+  <tr>
+    <td><b>{{ g.ma_goi }}</b></td>
+    <td>{{ g.ten }}</td>
+    <td>{% if g.trang_thai_gia == "DA_TINH" %}<b>{{ g.chi_phi_nguyen_vat|floatformat:0|intcomma }}đ</b>{% else %}—{% endif %}</td>
+    <td>
+      {% if g.trang_thai_gia == "DA_TINH" %}<span class="pill ok">Đã tính giá</span>
+      {% elif g.trang_thai_gia == "THIEU_GIA" %}<span class="pill warn">Thiếu đơn giá</span>
+      {% else %}<span class="pill warn">Chưa cấu hình BOM</span>{% endif %}
+    </td>
+    <td><a class="btn" href="{% url 'services:cost_detail' g.pk %}">Xem chi tiết</a></td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h3>Đơn giá vốn vật tư</h3>
+<form method="post" class="card">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  {{ form.vat_tu }} {{ form.vat_tu.errors }}
+  {{ form.don_gia_von }} {{ form.don_gia_von.errors }}
+  <button class="btn primary">Lưu đơn giá vốn</button>
+</form>
+
+<table style="margin-top:16px">
+  <tr><th>Vật tư</th><th>Tỷ lệ quy đổi</th><th>Đơn giá vốn / ĐV chuẩn</th></tr>
+  {% for r in vat_tu_rows %}
+  <tr>
+    <td>{{ r.obj }}</td>
+    <td>{{ r.obj.conversion_rate|default:"—" }}</td>
+    <td>{% if r.gia_von is not None %}{{ r.gia_von|floatformat:0|intcomma }}đ{% else %}Chưa có{% endif %}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}
