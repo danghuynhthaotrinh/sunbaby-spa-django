@@ -9,9 +9,8 @@ from django.db import transaction
 from django.db.models import F, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from kho.models import TheKho, CATEGORIES
 from .forms import ItemForm, SupplierForm, ReceiptForm, ReceiptDetailFormSet
-from .models import Item, Supplier, GoodsReceipt, GoodsReceiptDetail
+from .models import Item, Supplier, GoodsReceipt, GoodsReceiptDetail, TheKho, CATEGORIES
 
 def access(view):
     @login_required
