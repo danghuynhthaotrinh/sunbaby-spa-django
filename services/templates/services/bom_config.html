@@ -10,13 +10,14 @@
   {% if formset.non_form_errors %}<div class="err">{{ formset.non_form_errors }}</div>{% endif %}
 
   <table>
-    <thead><tr><th>Vật tư</th><th>Định mức (ĐV chuẩn)</th><th>Xóa</th></tr></thead>
+    <thead><tr><th>V&#7853;t t&#432;</th><th>&#272;&#7883;nh m&#7913;c</th><th>&#272;&#417;n v&#7883;</th><th>X&#243;a</th></tr></thead>
     <tbody id="bom-body">
       {% for form in formset %}
       <tr>
         <td>{% for h in form.hidden_fields %}{{ h }}{% endfor %}
             {{ form.vat_tu }}{{ form.vat_tu.errors }}</td>
         <td>{{ form.dinh_luong }}{{ form.dinh_luong.errors }}</td>
+        <td>{% if form.instance.pk %}{{ form.instance.vat_tu.standard_unit }}{% endif %}</td>
         <td>{% if form.instance.pk %}{{ form.DELETE }}{% endif %}</td>
       </tr>
       {% endfor %}
@@ -35,6 +36,7 @@
   <tr>
     <td>{% for h in formset.empty_form.hidden_fields %}{{ h }}{% endfor %}{{ formset.empty_form.vat_tu }}</td>
     <td>{{ formset.empty_form.dinh_luong }}</td>
+    <td></td>
     <td></td>
   </tr>
 </template>

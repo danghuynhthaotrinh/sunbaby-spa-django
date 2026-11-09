@@ -31,12 +31,13 @@
 </form>
 
 <table style="margin-top:16px">
-  <tr><th>Vật tư</th><th>Tỷ lệ quy đổi</th><th>Đơn giá vốn / ĐV chuẩn</th></tr>
+  <tr><th>M&#227; v&#7853;t t&#432;</th><th>T&#234;n v&#7853;t t&#432;</th><th>&#272;&#417;n v&#7883; nh&#7853;p</th><th>&#272;&#417;n v&#7883; chu&#7849;n</th>
+      <th>T&#7927; l&#7879; quy &#273;&#7893;i</th><th>&#272;&#417;n gi&#225; v&#7889;n / &#272;V</th></tr>
   {% for r in vat_tu_rows %}
   <tr>
-    <td>{{ r.obj }}</td>
-    <td>{{ r.obj.conversion_rate|default:"—" }}</td>
-    <td>{% if r.gia_von is not None %}{{ r.gia_von|floatformat:0|intcomma }}đ{% else %}Chưa có{% endif %}</td>
+    <td>{{ r.obj.sku }}</td><td>{{ r.obj.name }}</td><td>{{ r.obj.import_unit }}</td><td>{{ r.obj.standard_unit }}</td>
+    <td>{{ r.obj.conversion_rate|default:"&#8212;" }}</td>
+    <td>{% if r.gia_von is not None %}{{ r.gia_von|floatformat:0|intcomma }}&#273;{% else %}Ch&#432;a c&#243;{% endif %}</td>
   </tr>
   {% endfor %}
 </table>

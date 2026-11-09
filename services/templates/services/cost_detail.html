@@ -7,7 +7,7 @@
   {% for d in dong_list %}
   <tr>
     <td>{{ d.vat_tu }}</td>
-    <td>{{ d.dinh_luong|floatformat:"-2" }}</td>
+    <td>{{ d.dinh_luong|floatformat:"-2" }} {{ d.vat_tu.standard_unit }}</td>
     <td>{% if d.thieu_don_gia %}<span class="pill warn">Thiếu đơn giá</span>
         {% else %}{{ d.gia_von_don_vi|floatformat:0|intcomma }}đ{% endif %}</td>
     <td>{{ d.chi_phi_dong|floatformat:0|intcomma }}đ</td>

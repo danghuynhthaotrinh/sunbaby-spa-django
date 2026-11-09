@@ -51,6 +51,9 @@ class Item(models.Model):
     class Meta:
         db_table = "items"
 
+    def __str__(self):
+        return f"{self.sku} - {self.name}"
+
 
 class GoodsReceipt(models.Model):
     receipt_code = models.CharField(max_length=50, unique=True)
