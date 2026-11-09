@@ -1,0 +1,10 @@
+{% extends "services/_layout.html" %}
+{% block content %}
+<h2>{% if goi %}Sửa gói {{ goi.ma_goi }}{% else %}Thêm gói dịch vụ{% endif %}</h2>
+<form method="post" class="card" style="max-width:560px">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button class="btn primary">Lưu</button>
+  <a class="btn" href="{% url 'services:package_list' %}">Hủy</a>
+</form>
+{% endblock %}

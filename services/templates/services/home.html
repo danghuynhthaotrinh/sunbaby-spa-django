@@ -1,0 +1,15 @@
+{% extends "services/_layout.html" %}
+{% block content %}
+<h1>Quản lý gói dịch vụ &amp; BOM</h1>
+<div class="cards">
+  <div class="card"><h3>Quản lý gói dịch vụ</h3>
+    <p>Tạo, sửa, tìm kiếm và ngừng/kích hoạt gói.</p>
+    <a class="btn primary" href="{% url 'services:package_list' %}">Truy cập</a></div>
+  <div class="card"><h3>Cấu hình BOM</h3>
+    <p>Khai báo vật tư và định mức cho từng gói.</p>
+    <a class="btn primary" href="{% url 'services:package_list' %}">Truy cập</a></div>
+  <div class="card"><h3>Giá vốn lý thuyết</h3>
+    <p>Xem và tính giá vốn của các gói.</p>
+    <a class="btn primary" href="{% url 'services:cost_list' %}">Truy cập</a></div>
+</div>
+{% endblock %}
