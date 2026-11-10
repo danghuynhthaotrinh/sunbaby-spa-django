@@ -1,0 +1,141 @@
+{% extends "shifts/layout.html" %}
+{% block uc %}
+<div class="sb-eyebrow">Sẵn sàng phục vụ</div>
+<h1 class="sb-title">Bắt đầu ca</h1>
+<p class="sb-sub">Lễ tân xác nhận một lần để bắt đầu ca và ghi nhận xuất kho tự động.</p>
+
+<div class="sb-split" style="grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)">
+<div>
+<div class="sb-card">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px">
+    <h2 style="font-size:22px">Tóm tắt ca dịch vụ</h2>
+    {% if mode == 'order' %}<span class="sb-pill {{ o.status }}">{{ o.status_label }}</span>
+    {% else %}<span class="sb-pill draft">Chưa tạo ca</span>{% endif %}
+  </div>
+
+  {# ============ ĐÃ CÓ CA ============ #}
+  {% if mode == 'order' %}
+    <div class="sb-strip" style="grid-template-columns:1fr 1fr">
+      <div class="sb-cell"><small>Mã ca</small><b>{{ o.code }}</b></div>
+      <div class="sb-cell"><small>Gói dịch vụ</small><b>{{ o.package_code }} {{ o.package_name }}</b></div>
+      <div class="sb-cell"><small>KTV</small><b>{{ o.staff }}</b></div>
+      <div class="sb-cell"><small>Phòng/Giường</small><b>{{ o.room }}</b></div>
+      <div class="sb-cell"><small>Khách</small><b>{{ o.customer|default:"Khách vãng lai" }}{% if o.phone %} · {{ o.phone }}{% endif %}</b></div>
+      <div class="sb-cell"><small>{% if o.status == 'SERVING' %}Bắt đầu / Dự kiến kết thúc{% else %}Bắt đầu – Kết thúc{% endif %}</small><b>{{ o.end_text }}</b></div>
+      <div class="sb-cell"><small>Thời lượng</small><b>{{ o.minutes }} phút</b></div>
+      <div class="sb-cell"><small>Ghi chú</small><b>{{ o.note|default:"—" }}</b></div>
+      <div class="sb-cell"><small>Phiếu xuất kho nội bộ</small><b>{{ o.issue_code|default:"—" }}</b></div>
+      <div class="sb-cell"><small>Giá vốn BOM</small><b>{{ cost }}</b></div>
+    </div>
+
+    {% if o.status == 'SERVING' %}
+    <div class="sb-timer">
+      <div style="color:var(--eyebrow);font-size:14px">Thời gian còn lại · mô phỏng phòng</div>
+      <div class="t" id="tLeft">--:--</div>
+      <div class="tr"><i id="tBar" style="width:0%"></i></div>
+      <div class="sb-muted" style="font-size:12.5px;margin-top:8px"><span id="tPct">0</span>% thời lượng mô phỏng · 1 giây thực = 1 phút dịch vụ</div>
+    </div>
+    {% elif o.status == 'COMPLETED' %}
+    <div class="sb-alert ok"><span class="ic">✅</span><div><b>Ca đã hoàn thành.</b> Phòng và KTV đã được giải phóng; khăn đã chuyển sang “Bẩn chờ giặt”.</div></div>
+    {% else %}
+    <div class="sb-alert warn"><span class="ic">↩️</span><div><b>Ca đã hủy &amp; hoàn kho.</b> Vật tư và đồ vải đã được trả về kho đúng lượng đã trừ (thẻ kho loại “Hoàn trả hủy ca”).</div></div>
+    {% endif %}
+
+    <div class="sb-actions" style="margin-top:6px">
+      {% if o.status == 'SERVING' and can_operate %}
+      <form method="post" action="{% url 'shifts:complete' o.pk %}" onsubmit="return confirm('Hoàn thành ca {{ o.code }}? Khăn sẽ chuyển sang Bẩn chờ giặt.')">{% csrf_token %}<button class="sb-btn ok">✔ Hoàn thành ca</button></form>
+      <form method="post" action="{% url 'shifts:cancel' o.pk %}" onsubmit="return confirm('Hủy ca {{ o.code }} và hoàn trả vật tư về kho?')">{% csrf_token %}<button class="sb-btn bad">Hủy ca</button></form>
+      {% endif %}
+      <a class="sb-btn ghost" href="{% url 'shifts:deduct' %}?ca={{ o.code }}">Xem phiếu trừ kho →</a>
+      {% if can_operate %}<a class="sb-btn ghost" href="{% url 'shifts:new_shift' %}">+ Tạo ca mới</a>{% endif %}
+    </div>
+
+  {# ============ NHÁP, CHUẨN BỊ BẮT ĐẦU ============ #}
+  {% elif mode == 'draft' %}
+    <div class="sb-strip" style="grid-template-columns:1fr 1fr">
+      <div class="sb-cell"><small>Mã ca</small><b>Tự sinh khi bắt đầu (CA-yymmdd-xxx)</b></div>
+      <div class="sb-cell"><small>Gói dịch vụ</small><b>{{ pkg_code }} {{ pkg_name }}</b></div>
+      <div class="sb-cell"><small>KTV</small><b>{{ dv.staff_label }}</b></div>
+      <div class="sb-cell"><small>Phòng/Giường</small><b>{{ dv.room }}</b></div>
+      <div class="sb-cell"><small>Khách</small><b>{{ dv.customer_name|default:"Khách vãng lai" }}{% if dv.customer_phone %} · {{ dv.customer_phone }}{% endif %}</b></div>
+      <div class="sb-cell"><small>Thời lượng</small><b>{{ minutes }} phút</b></div>
+      <div class="sb-cell"><small>Ghi chú</small><b>{{ dv.note|default:"—" }}</b></div>
+      <div class="sb-cell"><small>Giá vốn BOM</small><b>{{ cost }}</b></div>
+    </div>
+
+    {% if chk.ok %}
+      <div class="sb-alert ok"><span class="ic">✅</span><div><b>{{ chk.message }}</b><br>Khi bấm nút, hệ thống tạo ca, trừ vật tư theo BOM và chuyển khăn từ Sạch → Đang phục vụ trong <u>một giao dịch</u> (thất bại thì hoàn tác toàn bộ).</div></div>
+    {% else %}
+      <div class="sb-alert bad"><span class="ic">⛔</span><div><b>{{ chk.message }}</b></div></div>
+    {% endif %}
+
+    <form method="post" action="{% url 'shifts:start' %}" class="sb-actions" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Đang xử lý…';">
+      {% csrf_token %}
+      {% if can_operate %}
+        {% if chk.ok %}<button class="sb-btn lg">BẮT ĐẦU CA DỊCH VỤ</button>
+        {% else %}<span class="sb-btn lg disabled">BẮT ĐẦU CA DỊCH VỤ</span>{% endif %}
+      {% endif %}
+      <a class="sb-btn ghost" href="{% url 'shifts:check' %}">← Quay lại kiểm tra tồn kho</a>
+      <a class="sb-btn ghost" href="{% url 'shifts:choose' %}">Sửa thông tin / đổi gói</a>
+    </form>
+
+  {# ============ CHƯA CÓ GÌ ============ #}
+  {% else %}
+    <p style="margin:6px 0 18px;color:var(--muted)">Chưa có ca mới. Hãy chọn gói, phân công và kiểm tra tồn kho.</p>
+    <div class="sb-actions" style="margin-top:0">
+      {% if can_operate %}<a class="sb-btn" href="{% url 'shifts:new_shift' %}">+ Tạo ca mới</a>{% endif %}
+      <a class="sb-btn ghost" href="{% url 'shifts:dashboard' %}">Về Điều phối ca</a>
+    </div>
+  {% endif %}
+</div>
+</div>
+
+<div>
+{% if mode == 'order' %}
+  <div class="sb-card">
+    <h2>Vật tư đã xuất cho ca</h2>
+    <div class="hint">Số lượng được chụp tại thời điểm bắt đầu ca (sửa BOM sau đó không ảnh hưởng).</div>
+    <ul class="sb-bom">
+      {% for l in lines %}<li><span><b>{{ l.sku }}</b> · {{ l.name }}{% if l.is_linen %} <i class="sb-muted">(đồ vải)</i>{% endif %}</span><b>{{ l.qty }} {{ l.unit }}</b></li>
+      {% empty %}<li class="sb-muted">Ca này chưa có dòng xuất kho.</li>{% endfor %}
+    </ul>
+  </div>
+{% elif mode == 'draft' %}
+  <div class="sb-card">
+    <h2>Định mức sẽ trừ</h2>
+    <div class="hint">Kết quả kiểm tra lần cuối ngay trước khi bắt đầu ca.</div>
+    <ul class="sb-bom">
+      {% for r in chk.rows %}<li><span><b>{{ r.sku }}</b> · {{ r.name }}{% if r.is_linen %} <i class="sb-muted">(Sạch → Đang phục vụ)</i>{% endif %}
+        <span class="st {% if r.enough %}sb-ok{% else %}sb-no{% endif %}">{% if r.enough %}✔ đủ (còn {{ r.have|floatformat:"-2" }}){% else %}✖ thiếu{% endif %}</span></span>
+        <b>{{ r.need|floatformat:"-2" }} {{ r.unit }}</b></li>
+      {% empty %}<li class="sb-muted">Gói chưa cấu hình BOM.</li>{% endfor %}
+    </ul>
+  </div>
+{% endif %}
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if mode == 'order' and o.status == 'SERVING' %}
+<script>
+(function(){
+  /* Mô phỏng: 1 giây thực = 1 phút dịch vụ. Mốc giờ lấy theo đồng hồ SERVER để không lệch máy khách. */
+  const TOTAL = {{ o.minutes }};
+  const startMs = {{ o.started_ms }};
+  const offset = {{ now_ms }} - Date.now();
+  const left = document.getElementById('tLeft'), bar = document.getElementById('tBar'), pct = document.getElementById('tPct');
+  const pad = n => String(n).padStart(2,'0');
+  function tick(){
+    const elapsedSvcMin = Math.max(0, (Date.now() + offset - startMs) / 1000);   // giây thực = phút dịch vụ
+    const remain = Math.max(0, TOTAL - elapsedSvcMin);
+    const m = Math.floor(remain), s = Math.floor((remain - m) * 60);
+    left.textContent = remain <= 0 ? 'Hết giờ' : pad(m) + ':' + pad(s);
+    const p = TOTAL ? Math.min(100, Math.round(elapsedSvcMin * 100 / TOTAL)) : 100;
+    bar.style.width = p + '%'; pct.textContent = p;
+  }
+  tick(); setInterval(tick, 500);
+})();
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="sb">
+{% include "shifts/_head.html" with title="Thẻ kho – lịch sử biến động" %}
+<div class="sb-body">
+<div class="sb-card">
+  <form method="get" style="display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:14px">
+    <div style="min-width:280px"><label class="f">Vật tư</label>
+      <select class="i" name="item"><option value="">Tất cả</option>
+        {% for it in items %}<option value="{{ it.pk }}" {% if item_id == it.pk|stringformat:"s" %}selected{% endif %}>{{ it.sku }} – {{ it.name }}</option>{% endfor %}
+      </select></div>
+    <label style="margin:0 0 10px"><input type="checkbox" name="all" value="1" {% if show_all %}checked{% endif %}> Hiện cả biến động nhập mua NCC</label>
+    <button class="sb-btn">Lọc</button>
+  </form>
+  <div style="overflow-x:auto"><table>
+    <tr><th>Thời điểm</th><th>Vật tư</th><th>Loại biến động</th><th>Số lượng</th><th>Tồn cuối</th><th>Chứng từ / Mã ca</th></tr>
+    {% for c in cards %}
+    <tr><td>{{ c.ngay|date:"d/m/Y H:i" }}</td><td>{{ c.item.name }}</td><td>{{ c.loai_bien_dong }}</td>
+      <td style="color:{% if c.so_luong < 0 %}#d6334a{% else %}#1c8a55{% endif %};font-weight:700">{{ c.so_luong|floatformat:"-2" }}</td>
+      <td>{{ c.ton_cuoi|floatformat:"-2" }}</td><td>{{ c.chung_tu }}</td></tr>
+    {% empty %}<tr><td colspan="6" class="sb-muted" style="text-align:center;padding:26px">Chưa có biến động kho nào.</td></tr>{% endfor %}
+  </table></div>
+</div>
+</div></div>
+{% endblock %}

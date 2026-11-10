@@ -1,0 +1,75 @@
+{% extends "shifts/layout.html" %}
+{% block uc %}
+<div class="sb-headrow">
+  <div>
+    <div class="sb-eyebrow">Tổng quan vận hành</div>
+    <h1 class="sb-title">Điều phối ca</h1>
+    <p class="sb-sub" style="margin-bottom:6px">Theo dõi các ca dịch vụ, nhân sự và trạng thái phục vụ trong ngày.</p>
+  </div>
+  <div class="sb-actions" style="margin:0 0 10px">
+    {% if request.user.is_superuser %}
+    <form method="post" action="{% url 'shifts:reset_demo' %}" onsubmit="return confirm('Hoàn kho các ca đang chạy và XÓA toàn bộ danh sách ca demo?')">{% csrf_token %}
+      <button class="sb-btn ghost sm">Reset dữ liệu demo</button></form>
+    {% endif %}
+    {% if can_operate %}<a class="sb-btn" href="{% url 'shifts:new_shift' %}">+ Tạo ca mới</a>{% endif %}
+  </div>
+</div>
+
+<div class="sb-kpis">
+  <div class="sb-kpi"><small>Tổng ca {% if is_today %}hôm nay{% else %}trong ngày{% endif %}</small><b>{{ counts.total }}</b></div>
+  <div class="sb-kpi t-orange"><small>Đang phục vụ</small><b>{{ counts.serving }}</b></div>
+  <div class="sb-kpi t-green"><small>Đã hoàn thành</small><b>{{ counts.completed }}</b></div>
+  <div class="sb-kpi t-red"><small>Đã hủy &amp; hoàn kho</small><b>{{ counts.cancelled }}</b></div>
+</div>
+
+<!-- Thanh KPI vận hành theo đặc tả UC_4 bước 1: công suất, tồn kho vật tư chính, khăn bẩn chờ giặt -->
+<div class="sb-kpis">
+  <div class="sb-kpi"><small>Công suất phục vụ hôm nay</small><b>{{ kpi.served }}</b><span class="u">/ {{ kpi.capacity }} khách</span>
+    <div class="sb-bar"><i style="width:{{ kpi.percent }}%"></i></div></div>
+  {% for s in kpi.stock_cards %}
+  <div class="sb-kpi {% if s.low %}low{% endif %}"><small>Tồn kho: {{ s.name }}</small><b>{{ s.have|floatformat:"-2" }}</b><span class="u">{{ s.unit }}</span>
+    {% if s.low %}<span class="flag">⚠ Dưới mức tối thiểu ({{ s.min|floatformat:"-2" }})</span>{% endif %}</div>
+  {% endfor %}
+  <div class="sb-kpi"><small>Khăn bẩn chờ giặt</small><b>{{ kpi.dirty }}</b><span class="u">cái</span>
+    <a href="/operations/" style="display:block;margin-top:6px;font-size:12.5px;color:var(--brown)">→ Xử lý tại Vận hành &amp; Khăn</a></div>
+</div>
+
+<div class="sb-card">
+  <form method="get" id="fFilter" style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px">
+    <div>
+      <h2 style="font-size:24px">Lịch ca · {{ day|date:"d/m/Y" }}</h2>
+      <div class="hint" style="margin:2px 0 0">Dữ liệu ca được lấy trực tiếp từ các ca đã bắt đầu trong hệ thống.</div>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+      <div><label class="f" style="margin-top:0">Ngày</label><input class="i" type="date" name="date" value="{{ day|date:'Y-m-d' }}" onchange="this.form.submit()"></div>
+      <div><label class="f" style="margin-top:0">Trạng thái</label>
+        <select class="i" name="status" onchange="this.form.submit()"><option value="">Tất cả</option>
+          {% for key, label in status_choices %}<option value="{{ key }}" {% if status == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select></div>
+      <div><label class="f" style="margin-top:0">Tìm ca hoặc khách hàng</label>
+        <input class="i" type="search" name="q" value="{{ q }}" placeholder="Mã ca / tên / SĐT (Enter)"></div>
+    </div>
+  </form>
+
+  <div class="sb-tablewrap"><table class="sb-t">
+    <tr><th>Mã ca</th><th>Gói dịch vụ</th><th>KTV phụ trách</th><th>Phòng/Giường</th><th>Khách hàng &amp; SĐT</th>
+        <th>Giờ bắt đầu – kết thúc</th><th>Trạng thái</th><th>Ghi chú</th><th>Thao tác</th></tr>
+    {% for o in orders %}
+    <tr>
+      <td><b>{{ o.code }}</b></td>
+      <td>{{ o.package_code }} {{ o.package_name }}</td>
+      <td>{{ o.staff }}</td>
+      <td>{{ o.room }}</td>
+      <td>{% if o.customer %}{{ o.customer }}{% if o.phone %} · {{ o.phone }}{% endif %}{% elif o.phone %}{{ o.phone }}{% else %}—{% endif %}</td>
+      <td>{{ o.end_text }}{% if o.status == 'SERVING' %}<br><span class="sb-muted" style="font-size:12px">(dự kiến)</span>{% endif %}</td>
+      <td><span class="sb-pill {{ o.status }}">{{ o.status_label }}</span></td>
+      <td>{{ o.note|default:"—" }}</td>
+      <td><a class="sb-btn ghost sm" href="{% url 'shifts:start' %}?ca={{ o.pk }}">Xem chi tiết</a></td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="9" class="empty">Chưa có ca nào {% if q or status %}khớp bộ lọc{% else %}trong ngày này{% endif %}.
+      {% if can_operate %}<a href="{% url 'shifts:new_shift' %}" style="color:var(--brown);font-weight:600">+ Tạo ca mới</a>{% endif %}</td></tr>
+    {% endfor %}
+  </table></div>
+</div>
+{% endblock %}
