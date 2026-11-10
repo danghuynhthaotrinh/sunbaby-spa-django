@@ -23,9 +23,9 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('management/', include('management.urls')),
     path('inventory/', include('inventory.urls')),
-    path('kho/', include('kho.urls')),
     path('services/', include('services.urls')),
     path('operations/', include('operations.urls')),
+    path('shifts/', include('shifts.urls')),
     path('', lambda request: redirect('login')),
 ]
 

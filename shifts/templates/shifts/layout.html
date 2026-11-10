@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<style>
+/* Toàn bộ class có tiền tố sb- và nằm trong .sb để KHÔNG xung đột với Bootstrap của base.html */
+.sb{--gold:#D4A64F;--gold-2:#DDA544;--brown:#8A5A00;--brown-d:#5E3D05;--ink:#3B2A10;--muted:#7A6A4F;--eyebrow:#9A6A12;
+  --cream:#FFF6E7;--bar:#F5E6C2;--card:#FFFDF8;--line:#EBDDB8;--ok:#1C8A55;--okbg:#E2F4E9;--bad:#C0283C;--badbg:#FDE6E9;--warn:#B45309;--warnbg:#FFEFCF;
+  background:var(--cream);margin:-1.5rem;min-height:100vh;color:var(--ink);padding-bottom:48px}
+.sb *{box-sizing:border-box}
+.sb h1,.sb h2,.sb h3{color:var(--ink);margin:0}
+.sb a{text-decoration:none}
+
+/* ---- thanh vàng trên cùng: nút quay lại ở góc TRÁI ---- */
+.sb-top{background:var(--gold);padding:14px 32px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sb-nav{display:flex;gap:8px}
+.sb-back{background:rgba(255,255,255,.38);border:0;color:var(--brown-d);padding:8px 14px;border-radius:12px;cursor:pointer;font:inherit;font-size:13.5px;font-weight:600}
+.sb-back:hover{background:rgba(255,255,255,.65);color:var(--brown-d)}
+.sb-brand{display:flex;align-items:center;gap:14px;margin-left:10px;padding-left:18px;border-left:1px solid rgba(94,61,5,.35)}
+.sb-brand img{height:38px;width:auto;object-fit:contain;border-radius:6px;background:rgba(255,255,255,.2);padding:2px 4px}
+.sb-brand b{display:block;letter-spacing:.14em;font-size:13px;color:var(--brown-d)}
+.sb-brand small{display:block;letter-spacing:.08em;font-size:11px;color:rgba(94,61,5,.8)}
+.sb-user{margin-left:auto;font-size:12.5px;color:var(--brown-d)}
+
+.sb-main{padding:0 32px;max-width:1500px}
+/* ---- thanh 5 tab dạng viên thuốc ---- */
+.sb-tabs{background:var(--bar);border-radius:26px;padding:7px 9px;margin:26px 0 24px;display:flex;gap:4px;flex-wrap:wrap}
+.sb-tabs a{padding:9px 18px;border-radius:22px;color:var(--ink);font-size:14.5px;font-weight:500;white-space:nowrap}
+.sb-tabs a:hover{background:rgba(255,255,255,.55)}
+.sb-tabs a.on{background:var(--brown);color:#fff;font-weight:600;box-shadow:0 4px 10px rgba(138,90,0,.3)}
+.sb-tabs .num{opacity:.6;font-size:12px;margin-right:6px}
+
+.sb-eyebrow{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--eyebrow);margin-bottom:8px}
+.sb-title{font-size:32px;line-height:1.15}
+.sb-sub{color:var(--muted);margin:6px 0 20px;font-size:14.5px}
+.sb-headrow{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+
+/* ---- thông báo ---- */
+.sb-msg{padding:12px 18px;border-radius:14px;margin-bottom:14px;font-size:14.5px;border:1px solid transparent}
+.sb-msg.success{background:var(--okbg);color:#14583a;border-color:#bfe5cf}
+.sb-msg.error{background:var(--badbg);color:#8f1d2e;border-color:#f3b6be}
+.sb-msg.warning,.sb-msg.info{background:var(--warnbg);color:#7a5410;border-color:#f1d79b}
+
+/* ---- thẻ, KPI ---- */
+.sb-card{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:24px 26px;box-shadow:0 10px 28px rgba(138,90,0,.07);margin-bottom:20px}
+.sb-card h2{font-size:20px;font-weight:600;margin-bottom:4px}
+.sb-card .hint{color:var(--muted);font-size:13px;margin-bottom:14px}
+.sb-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:20px}
+.sb-kpi{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:20px 22px;box-shadow:0 8px 22px rgba(138,90,0,.06)}
+.sb-kpi small{display:block;color:var(--muted);font-size:14px;margin-bottom:8px}
+.sb-kpi b{font-size:32px;font-weight:700;color:var(--brown-d)}
+.sb-kpi span.u{font-size:13px;color:var(--muted);margin-left:4px}
+.sb-kpi.t-orange b{color:#B45309}.sb-kpi.t-green b{color:var(--ok)}.sb-kpi.t-red b{color:var(--bad)}
+.sb-kpi.low{border-color:#f3b6be;background:#fffafa}.sb-kpi.low b{color:var(--bad)}
+.sb-kpi .flag{font-size:12px;color:var(--bad);font-weight:600;display:block;margin-top:4px}
+.sb-bar{height:8px;background:var(--bar);border-radius:8px;margin-top:10px;overflow:hidden}.sb-bar i{display:block;height:100%;background:var(--brown)}
+
+/* ---- nút ---- */
+.sb-btn{display:inline-flex;align-items:center;gap:6px;background:var(--brown);color:#fff;border:1.5px solid var(--brown);border-radius:14px;padding:11px 20px;font:inherit;font-size:14.5px;font-weight:600;cursor:pointer;transition:.15s}
+.sb-btn:hover{background:var(--brown-d);border-color:var(--brown-d);color:#fff}
+.sb-btn[disabled],.sb-btn.disabled{background:#CDB98E;border-color:#CDB98E;cursor:not-allowed;pointer-events:none;color:#fff}
+.sb-btn.ghost{background:#fff;color:var(--brown)}.sb-btn.ghost:hover{background:var(--bar);color:var(--brown-d)}
+.sb-btn.ok{background:var(--ok);border-color:var(--ok)}.sb-btn.ok:hover{background:#136a40;border-color:#136a40}
+.sb-btn.bad{background:#fff;color:var(--bad);border-color:var(--bad)}.sb-btn.bad:hover{background:var(--badbg);color:var(--bad)}
+.sb-btn.sm{padding:6px 14px;font-size:13px;border-radius:12px}
+.sb-btn.lg{padding:14px 28px;font-size:16px;letter-spacing:.03em}
+.sb-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;align-items:center}
+
+/* ---- form ---- */
+.sb label.f{display:block;font-size:13.5px;color:var(--ink);margin:14px 0 6px;font-weight:500}
+.sb .i{width:100%;padding:11px 14px;border:1.5px solid var(--line);border-radius:14px;font:inherit;font-size:14.5px;background:#fff;color:var(--ink)}
+.sb .i:focus{outline:none;border-color:var(--gold-2);box-shadow:0 0 0 3px rgba(221,165,68,.28)}
+.sb textarea.i{min-height:78px;resize:vertical}
+.sb-grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.sb-split{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:22px;align-items:start}
+.sb-sec{font-size:19px;font-weight:500;margin:24px 0 2px;color:var(--ink)}
+.sb-sec:first-child{margin-top:0}
+.sb-infobox{background:#FFF1D6;border-radius:16px;padding:16px 18px;margin-top:16px;font-size:14px;line-height:1.75}
+.sb-infobox b{font-weight:700}
+
+/* ---- bảng ---- */
+.sb-tablewrap{border:1px solid var(--line);border-radius:18px;overflow:auto;max-height:560px;background:#fff}
+.sb table.sb-t{width:100%;border-collapse:collapse;font-size:13.5px}
+.sb .sb-t th{background:var(--bar);text-align:left;padding:12px 14px;color:var(--brown-d);font-weight:700;font-size:12.8px;position:sticky;top:0;white-space:nowrap}
+.sb .sb-t td{padding:13px 14px;border-bottom:1px solid #F3E9CF;vertical-align:middle}
+.sb .sb-t tr:last-child td{border-bottom:0}
+.sb .sb-t tr:hover td{background:#FFFBF1}
+.sb .sb-t .empty{text-align:center;color:var(--muted);padding:34px}
+.sb-pill{display:inline-block;padding:5px 12px;border-radius:20px;font-size:12.5px;font-weight:700;line-height:1.25}
+.sb-pill.SERVING{background:var(--warnbg);color:#8A5D00}.sb-pill.COMPLETED{background:var(--okbg);color:#14583a}.sb-pill.CANCELLED{background:var(--badbg);color:#8f1d2e}
+.sb-pill.out{background:var(--warnbg);color:#8A5D00}.sb-pill.refund{background:var(--okbg);color:#14583a}.sb-pill.quick{background:#E6EEFB;color:#1f4a99}.sb-pill.other{background:#eee;color:#555}
+.sb-pill.draft{background:var(--warnbg);color:#8A5D00}
+.sb-pos{color:var(--ok);font-weight:700}.sb-neg{color:var(--bad);font-weight:700}
+.sb-ok{color:var(--ok);font-weight:700}.sb-no{color:var(--bad);font-weight:700}.sb-wn{color:var(--warn);font-weight:700}
+.sb-muted{color:var(--muted)}
+
+/* ---- kết quả kiểm tra tồn kho ---- */
+.sb-alert{border-radius:18px;padding:16px 20px;margin-bottom:18px;font-size:15px;display:flex;gap:12px;align-items:flex-start}
+.sb-alert.ok{background:var(--okbg);color:#14583a;border:1px solid #bfe5cf}
+.sb-alert.bad{background:var(--badbg);color:#8f1d2e;border:1px solid #f3b6be}
+.sb-alert.warn{background:var(--warnbg);color:#7a5410;border:1px solid #f1d79b}
+.sb-alert .ic{font-size:22px;line-height:1}
+.sb-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.sb-cell{background:#FFF6E3;border-radius:14px;padding:11px 15px}
+.sb-cell small{display:block;color:var(--eyebrow);font-size:12px;margin-bottom:2px}
+.sb-cell b{font-size:14.5px}
+.sb-cell.wide{grid-column:1/-1}
+
+/* ---- xem trước BOM bên phải ---- */
+.sb-bom li{list-style:none;display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #F1E4C4;font-size:14px}
+.sb-bom{margin:0;padding:0}.sb-bom li:last-child{border-bottom:0}
+.sb-bom .st{font-size:12px;margin-left:8px}
+
+/* ---- bộ đếm giờ ---- */
+.sb-timer{background:#FFF1D6;border-radius:20px;padding:20px 22px;margin:18px 0}
+.sb-timer .t{font-size:44px;font-weight:700;color:var(--brown-d);line-height:1.1;margin:4px 0 12px}
+.sb-timer .tr{height:9px;background:#EBDDB8;border-radius:8px;overflow:hidden}.sb-timer .tr i{display:block;height:100%;background:var(--brown);transition:width .4s}
+
+/* ---- modal ---- */
+.sb-modal{position:fixed;inset:0;background:rgba(40,25,5,.5);display:none;align-items:center;justify-content:center;z-index:2000}
+.sb-modal.open{display:flex}
+.sb-modal .box{background:#fff;border-radius:22px;padding:26px;width:min(440px,92vw);border:1px solid var(--line)}
+.sb-modal h3{font-size:20px;margin-bottom:4px}
+
+@media(max-width:1000px){.sb-split{grid-template-columns:1fr}.sb-grid2{grid-template-columns:1fr}.sb-main,.sb-top{padding-left:16px;padding-right:16px}}
+</style>
+
+<div class="sb">
+  <header class="sb-top">
+    <!-- Nút quay lại / trang chủ ở góc trên bên TRÁI -->
+    <div class="sb-nav">
+      <button type="button" class="sb-back" onclick="if(document.referrer){history.back()}else{location.href='{% url 'shifts:dashboard' %}'}">← Quay lại</button>
+      <a class="sb-back" href="/management/dashboard/">🏠 Trang chủ</a>
+    </div>
+    <div class="sb-brand">
+      <img src="{% static 'images/logo (3).png' %}" alt="Sunbaby Spa">
+      <div><b>ĐIỀU PHỐI CA DỊCH VỤ</b><small>SUN BABY · SERVICE OPERATIONS</small></div>
+    </div>
+    <div class="sb-user">👤 {{ request.user.username }}</div>
+  </header>
+
+  <div class="sb-main">
+    <nav class="sb-tabs">
+      <a href="{% url 'shifts:dashboard' %}" class="{% if tab == 'dashboard' %}on{% endif %}">Điều phối ca</a>
+      <a href="{% url 'shifts:choose' %}" class="{% if tab == 'choose' %}on{% endif %}">Chọn gói dịch vụ</a>
+      <a href="{% url 'shifts:check' %}" class="{% if tab == 'check' %}on{% endif %}">Kiểm tra tồn kho</a>
+      <a href="{% url 'shifts:start' %}" class="{% if tab == 'start' %}on{% endif %}">Bắt đầu ca</a>
+      <a href="{% url 'shifts:deduct' %}" class="{% if tab == 'deduct' %}on{% endif %}">Trừ kho theo BOM</a>
+    </nav>
+
+    {% for m in messages %}<div class="sb-msg {{ m.tags }}">{{ m }}</div>{% endfor %}
+
+    {% block uc %}{% endblock %}
+  </div>
+</div>
+{% block scripts %}{% endblock %}
+{% endblock %}

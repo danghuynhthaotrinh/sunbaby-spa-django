@@ -1,0 +1,104 @@
+{% extends "shifts/layout.html" %}
+{% block uc %}
+<div class="sb-eyebrow">Đối chiếu trước khi phục vụ</div>
+<h1 class="sb-title">Kiểm tra tồn kho</h1>
+
+{% if not dv %}
+  <p class="sb-sub">Chưa có gói được kiểm tra. Hãy chọn gói dịch vụ trước.</p>
+  <div class="sb-card"><h2>Định mức &amp; tồn khả dụng</h2>
+    <div class="sb-tablewrap"><table class="sb-t">
+      <tr><th>Mã SKU</th><th>Tên vật tư</th><th>Định mức cần dùng</th><th>Đơn vị</th><th>Tồn kho hiện tại</th><th>Tồn sau khi trừ</th><th>Ngưỡng an toàn (min_stock)</th><th>Kết quả</th></tr>
+      <tr><td colspan="8" class="empty">Chưa có BOM để kiểm tra.</td></tr></table></div></div>
+  <div class="sb-actions"><a class="sb-btn ghost" href="{% url 'shifts:choose' %}">← Quay lại chọn gói</a>
+    <span class="sb-btn disabled">Xác nhận &amp; chuyển sang Bắt đầu ca</span></div>
+
+{% elif error %}
+  <p class="sb-sub">Gói: <b>{{ dv.pkg }}</b></p>
+  <div class="sb-alert bad"><span class="ic">✖</span><div><b>Không truy vấn được dữ liệu tồn kho.</b><br>
+    Vui lòng tải lại trang hoặc liên hệ Thủ kho. Nút bắt đầu ca đang bị vô hiệu hóa.</div></div>
+  <div class="sb-actions"><a class="sb-btn ghost" href="{% url 'shifts:choose' %}">← Quay lại chọn gói</a>
+    <a class="sb-btn ghost" href="{% url 'shifts:check' %}">↻ Thử lại</a></div>
+
+{% else %}
+  <p class="sb-sub">Gói <b>{{ pkg.code }} {{ pkg.name }}</b> – hệ thống đối chiếu từng dòng BOM với tồn kho thực tế (chỉ đọc, không thay đổi dữ liệu).</p>
+
+  <div class="sb-strip">
+    <div class="sb-cell"><small>KTV phụ trách</small><b>{{ dv.staff_label }}</b></div>
+    <div class="sb-cell"><small>Phòng / Giường</small><b>{{ dv.room }}</b></div>
+    <div class="sb-cell"><small>Khách hàng</small><b>{{ dv.customer_name|default:"Khách vãng lai" }}{% if dv.customer_phone %} · {{ dv.customer_phone }}{% endif %}</b></div>
+    <div class="sb-cell"><small>Giá vốn BOM (vật tư tiêu hao)</small><b>{{ cost }}</b></div>
+  </div>
+
+  {% if not chk.configured %}
+    <div class="sb-alert bad"><span class="ic">✖</span><div><b>{{ chk.message }}</b><br>
+      Vào <a href="/services/" style="color:#8f1d2e;font-weight:700">Dịch vụ &amp; Định mức BOM</a> để cấu hình định mức cho gói này.</div></div>
+  {% elif chk.ok %}
+    <div class="sb-alert ok"><span class="ic">✅</span><div><b>{{ chk.message }}</b><br>
+      Bạn có thể chuyển sang bước Bắt đầu ca.
+      {% if chk.low %}<br><span class="sb-wn">Lưu ý: sau khi trừ, {{ chk.low|join:", " }} sẽ xuống dưới ngưỡng an toàn – nên báo Thủ kho nhập thêm.</span>{% endif %}</div></div>
+  {% else %}
+    <div class="sb-alert bad"><span class="ic">⛔</span><div><b>{{ chk.message }}</b></div></div>
+  {% endif %}
+
+  {% if chk.configured %}
+  <div class="sb-card">
+    <h2>Định mức &amp; tồn khả dụng</h2>
+    <div class="hint">Vật tư tiêu hao được so với tồn kho (đơn vị chuẩn của kho).</div>
+    <div class="sb-tablewrap"><table class="sb-t">
+      <tr><th>Mã SKU</th><th>Tên vật tư</th><th>Định mức cần dùng</th><th>Đơn vị</th><th>Tồn kho hiện tại</th><th>Tồn sau khi trừ</th><th>Ngưỡng an toàn (min_stock)</th><th>Kết quả</th></tr>
+      {% for r in supplies %}
+      <tr>
+        <td><b>{{ r.sku }}</b></td><td>{{ r.name }}</td>
+        <td>{{ r.need|floatformat:"-2" }}</td><td>{{ r.unit }}</td>
+        <td>{{ r.have|floatformat:"-2" }}</td>
+        <td class="{% if not r.enough %}sb-no{% elif r.low_after %}sb-wn{% endif %}">{% if r.enough %}{{ r.after|floatformat:"-2" }}{% else %}—{% endif %}</td>
+        <td>{{ r.min|floatformat:"-2" }}</td>
+        <td>{% if not r.enough %}<span class="sb-no">✖ Thiếu {{ r.short|floatformat:"-2" }}</span>{% elif r.low_after %}<span class="sb-wn">✔ Đủ · sắp hết</span>{% else %}<span class="sb-ok">✔ Đủ</span>{% endif %}</td>
+      </tr>
+      {% empty %}<tr><td colspan="8" class="empty">Gói này không dùng vật tư tiêu hao.</td></tr>{% endfor %}
+    </table></div>
+  </div>
+
+  <div class="sb-card">
+    <h2>Tủ Khăn Sạch</h2>
+    <div class="hint">Đồ vải được quản lý riêng: khi bắt đầu ca, số lượng sử dụng chuyển từ Sạch sang Đang dùng (không bị trừ vĩnh viễn).</div>
+    {% if linens %}
+    <div class="sb-tablewrap"><table class="sb-t">
+      <tr><th>Mã SKU</th><th>Đồ vải</th><th>Cần dùng</th><th>Khăn sạch hiện có</th><th>Còn lại sau khi dùng</th><th>Kết quả</th></tr>
+      {% for r in linens %}
+      <tr><td><b>{{ r.sku }}</b></td><td>{{ r.name }}</td><td>{{ r.need|floatformat:"-2" }} {{ r.unit }}</td>
+        <td>{{ r.have|floatformat:"-2" }} {{ r.unit }}</td>
+        <td>{% if r.enough %}{{ r.after|floatformat:"-2" }} {{ r.unit }}{% else %}—{% endif %}</td>
+        <td>{% if r.enough %}<span class="sb-ok">✔ Đủ khăn sạch</span>{% else %}<span class="sb-no">✖ Hết khăn sạch</span>{% endif %}</td></tr>
+      {% endfor %}
+    </table></div>
+    {% else %}<div class="sb-muted">Gói này không sử dụng đồ vải.</div>{% endif %}
+  </div>
+  {% endif %}
+
+  <div class="sb-actions">
+    <a class="sb-btn ghost" href="{% url 'shifts:choose' %}">← Quay lại chọn gói</a>
+    <button type="button" class="sb-btn ghost" onclick="document.getElementById('sbQi').classList.add('open')">+ Nhập kho nhanh</button>
+    <a class="sb-btn ghost" href="{% url 'shifts:check' %}">↻ Kiểm tra lại</a>
+    {% if chk.ok %}<a class="sb-btn" href="{% url 'shifts:start' %}">Xác nhận &amp; chuyển sang Bắt đầu ca →</a>
+    {% else %}<span class="sb-btn disabled">Xác nhận &amp; chuyển sang Bắt đầu ca</span>{% endif %}
+  </div>
+  {% if not chk.ok and chk.configured %}
+  <p class="sb-muted" style="margin-top:10px;font-size:13px">Sau khi Thủ kho nhập hàng hoặc bạn bấm “+ Nhập kho nhanh”, hệ thống sẽ kiểm tra lại từ đầu (luồng A1).</p>
+  {% endif %}
+
+  <div class="sb-modal" id="sbQi" onclick="if(event.target===this)this.classList.remove('open')">
+    <form class="box" method="post" action="{% url 'shifts:quick_import' %}">
+      {% csrf_token %}<input type="hidden" name="back" value="check">
+      <h3>+ Nhập kho nhanh</h3><div class="hint" style="color:var(--muted);font-size:13px">Cộng thẳng vào tồn kho và ghi một dòng thẻ kho “Nhập kho nhanh”.</div>
+      <label class="f">Vật tư (SKU)</label>
+      <select class="i" name="item" required><option value="">-- Chọn vật tư --</option>
+        {% for it in items %}<option value="{{ it.pk }}">{{ it.sku }} – {{ it.name }} ({{ it.standard_unit }})</option>{% endfor %}</select>
+      <label class="f">Số lượng (theo đơn vị chuẩn)</label>
+      <input class="i" name="qty" type="number" step="0.01" min="0.01" required>
+      <div class="sb-actions"><button class="sb-btn">Nạp kho &amp; kiểm tra lại</button>
+        <button type="button" class="sb-btn ghost" onclick="document.getElementById('sbQi').classList.remove('open')">Đóng</button></div>
+    </form>
+  </div>
+{% endif %}
+{% endblock %}
