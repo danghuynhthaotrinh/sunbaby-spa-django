@@ -1,0 +1,61 @@
+{% extends "shifts/layout.html" %}
+{% block uc %}
+<div class="sb-eyebrow">Nhật ký vật tư</div>
+<h1 class="sb-title">Trừ kho theo BOM</h1>
+<p class="sb-sub">Theo dõi vật tư tiêu hao, đồ vải đang dùng và các giao dịch hoàn trả. Dữ liệu ghi thẳng vào Thẻ kho chung của hệ thống.</p>
+
+<div class="sb-kpis" style="grid-template-columns:1fr 1fr">
+  <div class="sb-card" style="margin:0">
+    <div class="sb-muted" style="font-size:14px">Tổng vật tư đã trừ trong ca{% if order %} · <b>{{ order.code }}</b>{% endif %}</div>
+    {% if order %}
+      <div style="font-size:26px;font-weight:600;margin-top:8px">{{ n_supply }} vật tư tiêu hao · {{ n_linen }} đồ vải</div>
+      <div style="margin-top:6px"><span class="sb-pill {{ order.status }}">{{ order.status_label }}</span>
+        <span class="sb-muted" style="font-size:13px;margin-left:8px">{{ order.package_name }} · {{ order.room }}</span></div>
+    {% else %}
+      <div style="font-size:26px;font-weight:600;margin-top:8px">Chưa phát sinh ca mới</div>
+    {% endif %}
+  </div>
+  <div class="sb-card" style="margin:0">
+    <div class="sb-muted" style="font-size:14px">Tổng giá vốn BOM của ca</div>
+    <div style="font-size:26px;font-weight:600;margin-top:8px">{% if order %}{{ cost }}{% else %}0đ{% endif %}</div>
+    {% if order and refunded %}<div class="sb-muted" style="font-size:13px;margin-top:6px">Ca đã hủy – vật tư đã hoàn kho nên giá vốn = 0đ.</div>
+    {% elif order %}<div class="sb-muted" style="font-size:13px;margin-top:6px">Tính trên vật tư tiêu hao (đồ vải luân chuyển không tính giá vốn).</div>{% endif %}
+  </div>
+</div>
+
+<div class="sb-card" style="margin-top:20px">
+  <form method="get" style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px">
+    <div><h2 style="font-size:22px">Phiếu biến động kho tự động</h2>
+      <div class="hint" style="margin:2px 0 0">Mỗi lần trừ hoặc hoàn kho đều có một dòng lịch sử (BR3).</div></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+      <div><label class="f" style="margin-top:0">Ca</label>
+        <select class="i" name="ca" onchange="this.form.submit()"><option value="">Mặc định (ca mới nhất hôm nay)</option>
+          <option value="" disabled>──────────</option>
+          {% for o in recent_orders %}<option value="{{ o.order_code }}" {% if ca_code == o.order_code %}selected{% endif %}>{{ o.order_code }}</option>{% endfor %}
+        </select></div>
+      <div><label class="f" style="margin-top:0">Vật tư</label>
+        <select class="i" name="item" onchange="this.form.submit()"><option value="">Tất cả</option>
+          {% for it in items %}<option value="{{ it.pk }}" {% if item_id == it.pk|stringformat:"s" %}selected{% endif %}>{{ it.sku }} – {{ it.name }}</option>{% endfor %}
+        </select></div>
+      <label style="margin:0 0 12px;font-size:13.5px"><input type="checkbox" name="all" value="1" {% if show_all %}checked{% endif %} onchange="this.form.submit()"> Hiện cả nhập mua NCC</label>
+    </div>
+  </form>
+
+  <div class="sb-tablewrap" style="max-height:640px"><table class="sb-t">
+    <tr><th>Mã giao dịch</th><th>Mã vật tư</th><th>Tên vật tư</th><th>Loại biến động</th><th>Số lượng biến động</th>
+        <th>Tồn cuối sau giao dịch</th><th>Mã chứng từ</th><th>Thời điểm</th><th>Diễn giải</th></tr>
+    {% for r in rows %}
+    <tr>
+      <td><b>{{ r.code }}</b></td><td>{{ r.sku }}</td><td>{{ r.name }}</td>
+      <td><span class="sb-pill {{ r.kind }}">{{ r.loai }}</span></td>
+      <td class="{% if r.positive %}sb-pos{% else %}sb-neg{% endif %}">{{ r.qty }} {{ r.unit }}</td>
+      <td>{{ r.balance }} {{ r.unit }}</td>
+      <td>{% if r.kind == 'out' or r.kind == 'refund' %}<a href="{% url 'shifts:deduct' %}?ca={{ r.voucher }}" style="color:var(--brown);font-weight:600">{{ r.voucher }}</a>{% else %}{{ r.voucher }}{% endif %}</td>
+      <td>{{ r.when|date:"d/m/Y H:i" }}</td><td>{{ r.note }}</td>
+    </tr>
+    {% empty %}<tr><td colspan="9" class="empty">Chưa có biến động kho nào{% if ca_code %} cho ca {{ ca_code }}{% endif %}.</td></tr>{% endfor %}
+  </table></div>
+  {% if ca_code %}<div class="sb-actions" style="margin-top:14px"><a class="sb-btn ghost sm" href="{% url 'shifts:deduct' %}">× Bỏ lọc theo ca</a>
+    {% if order %}<a class="sb-btn ghost sm" href="{% url 'shifts:start' %}?ca={{ order.pk }}">Xem ca {{ order.code }} →</a>{% endif %}</div>{% endif %}
+</div>
+{% endblock %}

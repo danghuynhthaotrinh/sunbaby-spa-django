@@ -1,0 +1,115 @@
+{% extends "shifts/layout.html" %}
+{% block uc %}
+<div class="sb-eyebrow">Bước 01 / 02 · Chọn gói &amp; phân công</div>
+<h1 class="sb-title">Chọn gói dịch vụ</h1>
+<p class="sb-sub">Chọn dịch vụ phù hợp, sau đó sắp xếp KTV và phòng cho khách.</p>
+
+{% if not has_packages %}
+<div class="sb-alert warn"><span class="ic">⚠️</span><div><b>Chưa có gói dịch vụ khả dụng.</b><br>
+  Cần có ít nhất một gói đang hoạt động và đã cấu hình BOM. Hãy vào <a href="/services/" style="color:var(--brown);font-weight:700">Dịch vụ &amp; Định mức BOM</a> để thiết lập.</div></div>
+{% endif %}
+
+<form method="post" action="{% url 'shifts:check' %}" id="fChoose">
+{% csrf_token %}
+<div class="sb-split">
+  <div class="sb-card">
+    <div class="sb-sec">01 · Chọn dịch vụ</div>
+    <label class="f">Tìm nhanh theo mã hoặc tên gói</label>
+    <input class="i" type="search" id="q" placeholder="Ví dụ: FB-060 hoặc massage…" autocomplete="off" aria-describedby="searchHint">
+    <div class="hint" id="searchHint">Nhập mã hoặc tên gói để lọc danh sách bên dưới.</div>
+    <label class="f">Gói dịch vụ *</label>
+    <select class="i" name="package" id="pkg" required>
+      <option value="">-- Chọn gói dịch vụ --</option>
+      {% for p in packages_json %}
+      <option value="{{ p.id }}" data-search="{{ p.code }} {{ p.name }}" {% if not p.configured %}disabled{% endif %} {% if draft.package == p.id|stringformat:"s" %}selected{% endif %}>
+        {{ p.code }} · {{ p.name }}{% if not p.configured %} — chưa cấu hình BOM{% elif not p.ok %} — thiếu vật tư{% endif %}
+      </option>
+      {% endfor %}
+    </select>
+    <div class="sb-infobox" id="info">Chọn một gói để xem thông tin dịch vụ.</div>
+
+    <div class="sb-sec">02 · Phân công &amp; thông tin khách</div>
+    <div class="sb-grid2">
+      <div><label class="f">KTV đang làm việc *</label>
+        <select class="i" name="staff" required>
+          <option value="">-- Chọn KTV --</option>
+          {% for u in staff_list %}<option value="{{ u.pk }}" {% if u.busy %}disabled{% endif %} {% if draft.staff == u.pk|stringformat:"s" %}selected{% endif %}>{{ u.label }}{% if u.busy %} (đang phục vụ){% endif %}</option>{% endfor %}
+        </select></div>
+      <div><label class="f">Phòng / Giường *</label>
+        <select class="i" name="room" required>
+          <option value="">-- Chọn phòng --</option>
+          {% for r in rooms %}<option value="{{ r }}" {% if r in busy_rooms %}disabled{% endif %} {% if draft.room == r %}selected{% endif %}>{{ r }}{% if r in busy_rooms %} (đang bận){% endif %}</option>{% endfor %}
+        </select></div>
+      <div><label class="f">Tên khách hàng</label>
+        <input class="i" name="customer_name" value="{{ draft.customer_name }}" placeholder="Tên khách hoặc để trống nếu vãng lai"></div>
+      <div><label class="f">Số điện thoại</label>
+        <input class="i" name="customer_phone" value="{{ draft.customer_phone }}" placeholder="Ví dụ: 0905 112 334"></div>
+    </div>
+    <label class="f">Ghi chú thể trạng / lưu ý phục vụ</label>
+    <textarea class="i" name="note" placeholder="Dị ứng tinh dầu, lực nhẹ…">{{ draft.note }}</textarea>
+
+    <div class="sb-actions">
+      <button type="submit" class="sb-btn" id="go" disabled>Kiểm tra tồn kho →</button>
+      <a class="sb-btn ghost" href="{% url 'shifts:dashboard' %}">Hủy</a>
+    </div>
+  </div>
+
+  <div class="sb-card">
+    <h2>Xem trước định mức BOM</h2>
+    <div class="hint">Vật tư dự kiến sử dụng cho một ca dịch vụ.</div>
+    <div id="bom" class="sb-muted" style="font-size:14px;color:var(--eyebrow)">Danh mục vật tư sẽ hiện sau khi chọn gói.</div>
+  </div>
+</div>
+</form>
+{{ packages_json|json_script:"pkgData" }}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  const DATA = JSON.parse(document.getElementById('pkgData').textContent);
+  const DRAFT = "{{ draft.package|default:'' }}";
+  const sel = document.getElementById('pkg'), q = document.getElementById('q'),
+        info = document.getElementById('info'), bom = document.getElementById('bom'),
+        go = document.getElementById('go');
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  function fill(filter, keep){
+    const f = (filter||'').toLowerCase().trim();
+    sel.innerHTML = '<option value="">-- Chọn gói dịch vụ --</option>';
+    DATA.filter(p => !f || (p.code+' '+p.name).toLowerCase().includes(f)).forEach(p => {
+      const o = document.createElement('option');
+      o.value = p.id;
+      let t = (p.code ? p.code+' · ' : '') + p.name + ' · ' + p.minutes + ' phút';
+      if(!p.configured){ t += ' — chưa cấu hình BOM'; o.disabled = true; }
+      else if(!p.ok){ t += ' — ⚠ Thiếu: ' + p.missing.join(', '); }
+      o.textContent = t;
+      if(String(p.id) === String(keep)) o.selected = true;
+      sel.appendChild(o);
+    });
+    if(sel.options.length === 1){
+      const none = document.createElement('option');
+      none.disabled = true; none.textContent = 'Không tìm thấy gói phù hợp';
+      sel.appendChild(none);
+    }
+  }
+  function show(){
+    const p = DATA.find(x => String(x.id) === sel.value);
+    go.disabled = !p;
+    if(!p){ info.textContent = 'Chọn một gói để xem thông tin dịch vụ.';
+            bom.textContent = 'Danh mục vật tư sẽ hiện sau khi chọn gói.'; return; }
+    info.innerHTML = '<b>'+esc(p.code)+' · '+esc(p.name)+'</b><br>Nhóm dịch vụ: '+esc(p.group)+
+      '<br>Thời lượng: '+p.minutes+' phút · Giá niêm yết: '+esc(p.price)+
+      '<br>Số nhân sự: '+esc(p.staff)+' KTV · Giá vốn BOM: '+esc(p.cost)+
+      (p.ok ? '' : '<br><span class="sb-no">⚠ Thiếu: '+esc(p.missing.join(', '))+' – cần bổ sung ở bước kiểm tra tồn kho.</span>');
+    bom.innerHTML = '<ul class="sb-bom">' + p.rows.map(r =>
+      '<li><span><b>'+esc(r.sku)+'</b> · '+esc(r.name)+(r.linen?' <i class="sb-muted">(đồ vải)</i>':'')+
+      '<span class="st '+(r.enough?'sb-ok':'sb-no')+'">'+(r.enough?'✔ đủ':'✖ thiếu')+'</span></span>'+
+      '<b>'+esc(r.need)+' '+esc(r.unit)+'</b></li>').join('') + '</ul>';
+  }
+  fill('', DRAFT); show();
+  q.addEventListener('input', () => { const cur = sel.value; fill(q.value, cur); show(); });
+  sel.addEventListener('change', show);
+})();
+</script>
+{% endblock %}

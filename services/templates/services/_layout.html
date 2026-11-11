@@ -1,46 +1,52 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="utf-8">
-  <title>{% block title %}Gói dịch vụ & BOM{% endblock %}</title>
-  <style>
-    body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#fff8e8;color:#2b2b2b}
-    nav.top{background:#d9a441;padding:12px 24px;font-weight:600;color:#fff}
-    nav.top a{color:#fff;text-decoration:none;margin-right:18px}
-    main{max-width:1100px;margin:20px auto;padding:0 16px}
-    .tabs{display:inline-flex;gap:6px;background:#f3e0a8;padding:6px;border-radius:10px;margin-bottom:16px}
-    .tabs a{padding:8px 16px;border-radius:8px;text-decoration:none;color:#5a4410}
-    .tabs a.on{background:#fff;font-weight:600}
-    table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden}
-    th{background:#fbefc8;text-align:left;font-size:13px}
-    th,td{padding:10px 12px;border-bottom:1px solid #f0e6cc}
-    .btn{display:inline-block;padding:6px 12px;border:1px solid #d9a441;border-radius:8px;
-         background:#fff;color:#7a5a10;text-decoration:none;cursor:pointer;font-size:13px}
-    .btn.primary{background:#a8741a;color:#fff;border-color:#a8741a}
-    .pill{padding:3px 10px;border-radius:12px;font-size:12px}
-    .ok{background:#e0f5e4;color:#1d7a35}.off{background:#eee;color:#777}
-    .warn{background:#fde8c8;color:#9a5a00}
-    .msg{padding:10px 14px;border-radius:8px;background:#e0f5e4;margin-bottom:12px}
-    .err,.errorlist{color:#b3261e;font-size:13px;list-style:none;padding:0;margin:4px 0}
-    .cards{display:flex;gap:16px;flex-wrap:wrap}
-    .card{flex:1;min-width:240px;background:#fff;padding:20px;border-radius:14px}
-    input,select,textarea{padding:7px;border:1px solid #ddd;border-radius:8px}
-  </style>
-</head>
-<body>
-<nav class="top">
-  <a href="{% url 'services:home' %}">Hệ thống Quản lý dịch vụ</a>
-  <a href="{% url 'services:package_list' %}">Gói dịch vụ</a>
-</nav>
-<main>
-  {% for m in messages %}<div class="msg">{{ m }}</div>{% endfor %}
-  {% if tab %}
-  <div class="tabs">
-    <a href="{% url 'services:package_list' %}" class="{% if tab == 'goi' %}on{% endif %}">Tạo gói & Thiết lập BOM</a>
-    <a href="{% url 'services:cost_list' %}" class="{% if tab == 'cost' %}on{% endif %}">Đơn giá vốn lý thuyết</a>
-  </div>
-  {% endif %}
-  {% block content %}{% endblock %}
-</main>
-</body>
-</html>
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+.sv{--gold:#D4A64F;--gold-dark:#8A5A00;--gold-deep:#5E3D05;--cream:#FFF6E7;--bar:#F5E6C2;--card:#FFFDF8;--line:#EBDDB8;--ink:#3B2A10;--muted:#7A6A4F;--green:#1C8A55;--green-bg:#E2F4E9;--red:#C0283C;--red-bg:#FDE6E9;background:var(--cream);color:var(--ink);margin:-1.5rem;min-height:100vh;padding-bottom:44px}
+.sv *{box-sizing:border-box}.sv h1,.sv h2,.sv h3{color:var(--ink)}.sv a{text-decoration:none}
+.sv-top{background:var(--gold);padding:14px 32px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.sv-back{display:inline-flex;align-items:center;background:rgba(255,255,255,.38);border:0;color:var(--gold-deep);padding:8px 14px;border-radius:12px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
+.sv-back:hover{background:rgba(255,255,255,.65);color:var(--gold-deep)}
+.sv-brand{display:flex;align-items:center;gap:13px;margin-left:4px;padding-left:18px;border-left:1px solid rgba(94,61,5,.35)}
+.sv-brand img{height:38px;width:auto;object-fit:contain;border-radius:6px;background:rgba(255,255,255,.2);padding:2px 4px}
+.sv-brand b{display:block;letter-spacing:.12em;font-size:13px;color:var(--gold-deep)}.sv-brand small{display:block;letter-spacing:.08em;font-size:11px;color:rgba(94,61,5,.8)}
+.sv-user{margin-left:auto;font-size:12.5px;color:var(--gold-deep)}.sv-main{padding:0 32px;max-width:1500px;margin:auto}
+.sv-tabs{background:var(--bar);border-radius:26px;padding:7px 9px;margin:26px 0 24px;display:flex;gap:4px;flex-wrap:wrap}
+.sv-tabs a{padding:9px 18px;border-radius:22px;color:var(--ink);font-size:14.5px;font-weight:500;white-space:nowrap}
+.sv-tabs a:hover{background:rgba(255,255,255,.55)}.sv-tabs a.on{background:var(--gold-dark);color:#fff;font-weight:600;box-shadow:0 4px 10px rgba(138,90,0,.3)}
+.sv h1{font-size:32px;line-height:1.15;margin:0}.sv h2{font-size:22px;margin:0 0 16px}.sv p{color:var(--muted)}
+.sv .sv-card,.sv form.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px 24px;box-shadow:0 8px 24px rgba(138,90,0,.06);margin:0 0 20px}
+.sv table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.sv th{background:var(--bar);text-align:left;font-size:13px;color:var(--gold-deep);white-space:nowrap}.sv th,.sv td{padding:12px 14px;border-bottom:1px solid #F3E9CF;vertical-align:middle}.sv tr:last-child td{border-bottom:0}.sv tbody tr:hover td{background:#FFFBF1}
+.sv .btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 14px;border:1px solid var(--gold-dark);border-radius:12px;background:#fff;color:var(--gold-dark);text-decoration:none;cursor:pointer;font:inherit;font-size:13px;font-weight:600}
+.sv .btn:hover{background:var(--bar);color:var(--gold-deep)}.sv .btn.primary{background:var(--gold-dark);color:#fff}.sv .btn.primary:hover{background:var(--gold-deep)}
+.sv .pill{display:inline-block;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700}.sv .ok{background:var(--green-bg);color:#14583a}.sv .off{background:#eee;color:#777}.sv .warn{background:#FFEFCF;color:#8A5D00}
+.sv .msg{padding:12px 18px;border-radius:14px;background:var(--green-bg);color:#14583a;margin-bottom:14px;border:1px solid #bfe5cf}
+.sv .err,.sv .errorlist{color:var(--red);font-size:13px;list-style:none;padding:0;margin:4px 0}
+.sv input,.sv select,.sv textarea{padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);font:inherit;max-width:100%}
+.sv input:focus,.sv select:focus,.sv textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,166,79,.2)}
+.sv .cards{display:flex;gap:16px;flex-wrap:wrap}.sv .cards .card{flex:1;min-width:240px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 8px 24px rgba(138,90,0,.06)}
+@media(max-width:760px){.sv-top{padding:14px 18px}.sv-main{padding:0 16px}.sv-tabs{border-radius:18px}.sv-tabs a{padding:8px 12px}.sv table{display:block;overflow-x:auto;white-space:nowrap}}
+</style>
+<div class="sv">
+  <header class="sv-top">
+    <button type="button" class="sv-back" onclick="if(document.referrer){history.back()}else{location.href='{% url 'services:home' %}'}">← Quay lại</button>
+    <a class="sv-back" href="/management/dashboard/">🏠 Trang chủ</a>
+    <div class="sv-brand">
+      <img src="{% static 'images/logo (3).png' %}" alt="Sunbaby Spa">
+      <div><b>QUẢN LÝ GÓI DỊCH VỤ</b><small>SUN BABY · SERVICE MANAGEMENT</small></div>
+    </div>
+    <div class="sv-user">👤 {{ request.user.username }}</div>
+  </header>
+  <main class="sv-main">
+    <nav class="sv-tabs">
+      <a href="{% url 'services:home' %}" class="{% if request.resolver_match.url_name == 'home' %}on{% endif %}">Tổng quan dịch vụ</a>
+      <a href="{% url 'services:package_list' %}" class="{% if tab == 'goi' %}on{% endif %}">Gói dịch vụ &amp; BOM</a>
+      <a href="{% url 'services:cost_list' %}" class="{% if tab == 'cost' %}on{% endif %}">Đơn giá vốn</a>
+    </nav>
+    {% for m in messages %}<div class="msg">{{ m }}</div>{% endfor %}
+    {% block services_content %}{% endblock %}
+  </main>
+</div>
+{% endblock %}

@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'services',
     'operations',
     'management',
+    'shifts',
     'django.contrib.humanize',
 ]
 

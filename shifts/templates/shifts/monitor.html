@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="sb">
+{% include "shifts/_head.html" with title="Giám sát ca trong ngày" %}
+<div class="sb-body">
+{% for m in messages %}<div class="sb-msg {{ m.tags }}">{{ m }}</div>{% endfor %}
+<div class="sb-kpis">
+  {% for label, n in counts %}<div class="sb-kpi"><small>{{ label }}</small><b>{{ n }}</b></div>{% endfor %}
+</div>
+<div class="sb-card">
+  <form method="get" style="display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:14px">
+    <div><label class="f">Ngày</label><input class="i" type="date" name="date" value="{{ day|date:'Y-m-d' }}"></div>
+    <div><label class="f">Trạng thái</label>
+      <select class="i" name="status"><option value="">Tất cả</option>
+        {% for key, label in status_choices %}<option value="{{ key }}" {% if status == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select></div>
+    <button class="sb-btn">Lọc</button>
+    {% if can_operate %}<a class="sb-btn ghost" href="{% url 'shifts:board' %}">+ Tạo ca mới</a>{% endif %}
+  </form>
+  <div style="overflow-x:auto">
+  <table>
+    <tr><th>Mã ca</th><th>Gói dịch vụ</th><th>KTV</th><th>Phòng</th><th>Khách hàng</th><th>Trạng thái</th><th>Bắt đầu</th><th>Kết thúc</th>{% if can_operate %}<th>Thao tác</th>{% endif %}</tr>
+    {% for o in orders %}
+    <tr>
+      <td><b>{{ o.order_code }}</b><br><span class="sb-muted">{{ o.detail.issue_code }}</span></td>
+      <td>{{ o.service.ten }}</td>
+      <td>{% if o.staff %}{{ o.staff.full_name|default:o.staff.username }}{% else %}—{% endif %}</td>
+      <td>{{ o.room|default:"—" }}</td>
+      <td>{{ o.detail.customer_name|default:"—" }}<br><span class="sb-muted">{{ o.detail.customer_phone }}</span></td>
+      <td><span class="sb-badge {{ o.status }}">{{ o.status_label }}</span></td>
+      <td>{{ o.started_at|time:"H:i" }}</td>
+      <td>{% if o.completed_at %}{{ o.completed_at|time:"H:i" }}{% else %}—{% endif %}</td>
+      {% if can_operate %}<td>
+        {% if o.status == "SERVING" %}
+        <form method="post" action="{% url 'shifts:complete' o.pk %}" style="display:inline">{% csrf_token %}<button class="sb-btn ok sm">Hoàn thành</button></form>
+        <form method="post" action="{% url 'shifts:cancel' o.pk %}" style="display:inline" onsubmit="return confirm('Hủy ca {{ o.order_code }} và hoàn kho?')">{% csrf_token %}<button class="sb-btn bad sm">Hủy ca</button></form>
+        {% else %}<span class="sb-muted">—</span>{% endif %}
+      </td>{% endif %}
+    </tr>
+    {% empty %}<tr><td colspan="9" class="sb-muted" style="text-align:center;padding:26px">Chưa có ca nào trong ngày này.</td></tr>
+    {% endfor %}
+  </table></div>
+</div>
+</div></div>
+{% endblock %}

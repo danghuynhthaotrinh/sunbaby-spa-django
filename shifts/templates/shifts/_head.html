@@ -1,0 +1,53 @@
+<style>
+/* Mọi class đều có tiền tố sb- và nằm trong .sb để KHÔNG xung đột Bootstrap của base.html */
+.sb{--gold:#DDA544;--gold-dark:#A8731A;--gold-deep:#7C5410;--cream:#FFF7E6;--cream2:#FCEBC8;--ink:#2b2b2b;--muted:#7a6a4f;--ok:#1c8a55;--bad:#d6334a;
+  background:var(--cream);margin:-1.5rem;padding:0 0 40px;min-height:100vh;color:var(--ink)}
+.sb *{box-sizing:border-box}
+.sb-top{background:var(--gold);padding:12px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sb-top h1{font-size:19px;margin:0 0 0 8px;color:#fff;font-weight:700}
+.sb-back{background:rgba(255,255,255,.25);border:0;color:#fff;padding:8px 14px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;text-decoration:none}
+.sb-back:hover{background:rgba(255,255,255,.42);color:#fff}
+.sb-tabs{display:flex;gap:6px;padding:12px 24px 0;flex-wrap:wrap}
+.sb-tabs a{padding:8px 16px;border-radius:10px 10px 0 0;background:var(--cream2);color:var(--gold-deep);text-decoration:none;font-weight:600;font-size:14px}
+.sb-tabs a.on{background:#fff;color:var(--gold-dark);box-shadow:0 -2px 6px rgba(124,84,16,.12)}
+.sb-body{padding:18px 24px}
+.sb-msg{padding:12px 16px;border-radius:12px;margin-bottom:14px;font-size:14.5px}
+.sb-msg.success{background:#dff5e8;color:#145c38}.sb-msg.error{background:#fde3e6;color:#8f1d2e;border:1px solid #f3b6be}
+.sb-msg.warning,.sb-msg.info{background:#fff1cc;color:#7a5410}
+.sb-card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 10px rgba(124,84,16,.08);margin-bottom:18px}
+.sb-card h2{margin:0 0 12px;font-size:17px;color:var(--gold-deep)}
+.sb-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:18px}
+.sb-kpi{background:#fff;border-radius:16px;padding:16px 18px;border-left:6px solid var(--gold);box-shadow:0 2px 10px rgba(124,84,16,.08)}
+.sb-kpi small{color:var(--muted);display:block;margin-bottom:4px}.sb-kpi b{font-size:24px}
+.sb-kpi.low{border-left-color:var(--bad)}.sb-kpi.low b{color:var(--bad)}
+.sb-bar{height:8px;background:var(--cream2);border-radius:6px;margin-top:8px;overflow:hidden}.sb-bar i{display:block;height:100%;background:var(--gold-dark)}
+.sb-btn{display:inline-block;background:var(--gold-dark);color:#fff;border:0;border-radius:10px;padding:10px 18px;font-size:14.5px;cursor:pointer;font-weight:600;text-decoration:none}
+.sb-btn:hover{background:var(--gold-deep);color:#fff}.sb-btn[disabled]{background:#cfc3a8;cursor:not-allowed}
+.sb-btn.ghost{background:#fff;color:var(--gold-dark);border:1.5px solid var(--gold-dark)}.sb-btn.ghost:hover{background:var(--cream2);color:var(--gold-deep)}
+.sb-btn.ok{background:var(--ok)}.sb-btn.bad{background:var(--bad)}.sb-btn.sm{padding:6px 12px;font-size:13px}
+.sb label.f{display:block;font-size:13px;color:var(--muted);margin-bottom:4px;font-weight:600}
+.sb input.i,.sb select.i{width:100%;padding:10px 12px;border:1.5px solid #e4d2a8;border-radius:10px;font-size:14.5px;background:#fffdf7}
+.sb input.i:focus,.sb select.i:focus{outline:none;border-color:var(--gold-dark)}
+.sb-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sb table{width:100%;border-collapse:collapse;font-size:14px}
+.sb th{background:var(--cream2);text-align:left;padding:10px 12px;color:var(--gold-deep)}
+.sb td{padding:10px 12px;border-bottom:1px solid #f1e5c8;vertical-align:middle}
+.sb-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12.5px;font-weight:600}
+.sb-badge.SERVING{background:#fff1cc;color:#8a5d00}.sb-badge.COMPLETED{background:#dff5e8;color:#145c38}.sb-badge.CANCELLED{background:#fde3e6;color:#8f1d2e}
+.sb-muted{color:var(--muted)}
+@media(max-width:860px){.sb-grid2{grid-template-columns:1fr}}
+</style>
+<div class="sb-top">
+  <!-- Nút quay lại góc trên bên trái -->
+  <button type="button" class="sb-back" onclick="if(document.referrer){history.back()}else{location.href='/management/dashboard/'}">← Quay lại</button>
+  <a class="sb-back" href="/management/dashboard/">🏠 Trang chủ</a>
+  <h1>{{ title }}</h1>
+</div>
+<div class="sb-tabs">
+  <a href="{% url 'shifts:board' %}" class="{% if active == 'board' %}on{% endif %}">🛎️ Bàn điều phối &amp; Pre-check</a>
+  <a href="{% url 'shifts:monitor' %}" class="{% if active == 'monitor' %}on{% endif %}">📋 Giám sát ca trong ngày</a>
+  <a href="{% url 'shifts:stock_card' %}" class="{% if active == 'stock_card' %}on{% endif %}">📒 Thẻ kho</a>
+  <a href="/operations/">🧺 Vận hành &amp; Khăn</a>
+  <a href="/services/">💆 Gói &amp; BOM</a>
+  <a href="/inventory/">📦 Kho</a>
+</div>
