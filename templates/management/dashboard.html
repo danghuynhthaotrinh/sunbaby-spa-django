@@ -1,31 +1,102 @@
-{% extends 'base.html' %}
+{% extends "management/_uc6_base.html" %}
+{% block uc6_content %}
+<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:18px;">
+    <div>
+        <div class="uc6-subtitle">TỔNG QUAN VẬN HÀNH & KIỂM SOÁT KHO</div>
+        <div class="uc6-title" style="margin-bottom:0;">Dashboard Điều Hành</div>
+    </div>
+    <!-- Bộ lọc thời gian (Alt flow 3a) -->
+    <form method="get" style="display:flex; gap:8px; align-items:center;">
+        <span style="font-size:13px; font-weight:600; color:#4A3720;">Khoảng thời gian:</span>
+        <select name="days" class="form-control-spa" style="margin:0; width:auto;" onchange="this.form.submit()">
+            <option value="7" {% if days == 7 %}selected{% endif %}>7 ngày qua</option>
+            <option value="30" {% if days == 30 %}selected{% endif %}>30 ngày qua</option>
+            <option value="90" {% if days == 90 %}selected{% endif %}>90 ngày qua</option>
+        </select>
+    </form>
+</div>
 
-{% block content %}
-<h2 class="mb-4 fw-bold">Bảng điều khiển Tổng quan - Sunbaby Spa</h2>
-<div class="row g-4">
-    <div class="col-md-3">
-        <div class="card text-bg-primary shadow-sm p-3">
-            <h5>Tổng danh mục vật tư</h5>
-            <h2 class="fw-bold">{{ total_items }}</h2>
-        </div>
+<!-- 4 Thẻ KPI chỉ số chính -->
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 24px;">
+    <div class="uc6-card" style="margin-bottom:0;">
+        <div class="uc6-subtitle">PHIẾU HỎNG CHỜ DUYỆT</div>
+        <div style="font-size:32px; font-weight:800; color:#C0392B; margin:6px 0;">{{ pending_damages_count }}</div>
+        <a href="{% url 'damage_review_list' %}" style="font-size:13px; color:#7A521E; font-weight:600;">Duyệt ngay →</a>
     </div>
-    <div class="col-md-3">
-        <div class="card text-bg-success shadow-sm p-3">
-            <h5>Lượt khách phục vụ</h5>
-            <h2 class="fw-bold">{{ total_orders }}</h2>
-        </div>
+    <div class="uc6-card" style="margin-bottom:0;">
+        <div class="uc6-subtitle">ĐƠN PO ĐANG XỬ LÝ</div>
+        <div style="font-size:32px; font-weight:800; color:#7A521E; margin:6px 0;">{{ processing_pos_count }}</div>
+        <a href="{% url 'po_list_create' %}" style="font-size:13px; color:#7A521E; font-weight:600;">Quản lý PO →</a>
     </div>
-    <div class="col-md-3">
-        <div class="card text-bg-warning shadow-sm p-3">
-            <h5>Đơn PO chờ duyệt</h5>
-            <h2 class="fw-bold">{{ pending_po }}</h2>
-        </div>
+    <div class="uc6-card" style="margin-bottom:0;">
+        <div class="uc6-subtitle">VẬT TƯ CHẠM NGƯỠNG MIN</div>
+        <div style="font-size:32px; font-weight:800; color:#D35400; margin:6px 0;">{{ low_stock_count }}</div>
+        <span style="font-size:13px; color:#786B59;">Cần đặt hàng bổ sung</span>
     </div>
-    <div class="col-md-3">
-        <div class="card text-bg-danger shadow-sm p-3">
-            <h5>Báo cáo hao hụt</h5>
-            <h2 class="fw-bold">{{ damage_count }}</h2>
-        </div>
+    <div class="uc6-card" style="margin-bottom:0;">
+        <div class="uc6-subtitle">GIÁ TRỊ PO ({{ days }} NGÀY)</div>
+        <div style="font-size:26px; font-weight:800; color:#183B3A; margin:10px 0;">{{ total_po_value|floatformat:0 }} đ</div>
+        <span style="font-size:13px; color:#786B59;">Tổng chi mua sắm</span>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <!-- Danh sách vật tư sắp hết cần đặt PO -->
+    <div class="uc6-card">
+        <h4>⚠️ Vật tư chạm ngưỡng an toàn (min_stock)</h4>
+        <table class="uc6-table">
+            <thead>
+                <tr>
+                    <th>Mã SKU</th>
+                    <th>Tên vật tư</th>
+                    <th>Tồn hiện tại</th>
+                    <th>Ngưỡng Min</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in low_stock_items %}
+                <tr>
+                    <td>{{ item.sku }}</td>
+                    <td><strong>{{ item.name }}</strong></td>
+                    <td style="color:#C0392B; font-weight:700;">{{ item.stock_usable }} {{ item.unit_usage }}</td>
+                    <td>{{ item.min_stock }} {{ item.unit_usage }}</td>
+                    <td>
+                        <a href="{% url 'po_list_create' %}?from_item={{ item.id }}" class="btn-outline-gold" style="padding:4px 10px; font-size:12px;">Đặt PO</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" style="text-align:center; color:#888; padding:20px;">Tất cả vật tư đều ở mức tồn kho an toàn.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Danh sách hàng tồn lâu ngày (UC_2.3) -->
+    <div class="uc6-card">
+        <h4>📦 Hàng tồn lâu ngày (Không xuất kho {{ days }} ngày qua)</h4>
+        <table class="uc6-table">
+            <thead>
+                <tr>
+                    <th>Mã SKU</th>
+                    <th>Tên vật tư</th>
+                    <th>Phân loại</th>
+                    <th>Tồn khả dụng</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in slow_moving_items %}
+                <tr>
+                    <td>{{ item.sku }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.get_category_display }}</td>
+                    <td><strong>{{ item.stock_usable }}</strong> {{ item.unit_usage }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" style="text-align:center; color:#888; padding:20px;">Không có hàng tồn đọng lâu ngày.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}

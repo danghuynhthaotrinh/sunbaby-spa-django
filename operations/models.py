@@ -45,3 +45,17 @@ class LaundryShipment(models.Model):
 
     class Meta:
         db_table = 'laundry_shipments'
+from django.db import models
+from inventory.models import Item
+
+class LinenItem(models.Model):
+    item = models.OneToOneField(Item, on_delete=models.CASCADE, related_name='linen_spec')
+    total_qty = models.IntegerField(default=0, verbose_name="Tổng số lượng")
+    damaged_qty = models.IntegerField(default=0, verbose_name="Số lượng hỏng")
+    in_use_qty = models.IntegerField(default=0, verbose_name="Đang sử dụng/Giặt")
+
+    class Meta:
+        db_table = 'linen_items'
+
+    def __str__(self):
+        return f"Đồ vải: {self.item.name} (Hỏng: {self.damaged_qty})"

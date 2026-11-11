@@ -1,0 +1,82 @@
+{% extends "management/_uc6_base.html" %}
+{% block uc6_content %}
+<div class="uc6-subtitle">GHI NHẬN SỰ CỐ VẬT TƯ & ĐỒ VẢI</div>
+<div class="uc6-title">Tạo phiếu báo hỏng</div>
+<div class="uc6-desc">Lập phiếu báo hỏng khi phát hiện vật tư, khăn vải hoặc dụng cụ bị hư hại để chuyển Quản lý xét duyệt.</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px;">
+    <div class="uc6-card">
+        <h4>Thông tin phiếu báo hỏng mới</h4>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label class="form-label-spa">Đối tượng hỏng (Vật tư / Khăn vải) *</label>
+            <select name="item_id" class="form-control-spa" required>
+                <option value="">-- Chọn vật tư hoặc đồ vải --</option>
+                {% for item in items %}
+                    <option value="{{ item.id }}">[{{ item.sku }}] {{ item.name }} (Tồn: {{ item.stock }})</option>
+                {% endfor %}
+            </select>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                    <label class="form-label-spa">Số lượng hỏng *</label>
+                    <input type="number" name="quantity" min="1" value="1" class="form-control-spa" required>
+                </div>
+                <div>
+                    <label class="form-label-spa">Mức độ hỏng *</label>
+                    <select name="severity" class="form-control-spa">
+                        <option value="LOW">Nhẹ (Có thể sửa/giặt lại)</option>
+                        <option value="MEDIUM" selected>Trung bình (Hư hại một phần)</option>
+                        <option value="HIGH">Nặng (Hỏng hoàn toàn)</option>
+                    </select>
+                </div>
+            </div>
+
+            <label class="form-label-spa">Mô tả chi tiết nguyên nhân & tình trạng *</label>
+            <textarea name="reason" rows="3" class="form-control-spa" placeholder="Ví dụ: Rách mép khăn, dính tinh dầu..." required></textarea>
+
+            <label class="form-label-spa">Đính kèm ảnh minh chứng (nếu có)</label>
+            <input type="file" name="evidence_image" accept="image/*" class="form-control-spa">
+
+            <div style="margin-top: 10px; display: flex; gap: 10px;">
+                <a href="javascript:history.back()" class="btn-outline-gold">← Hủy bỏ</a>
+                <button type="submit" class="btn-gold">Gửi / Lưu phiếu báo hỏng</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="uc6-card">
+        <h4>Lịch sử phiếu báo hỏng bạn đã lập</h4>
+        <table class="uc6-table">
+            <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Đối tượng</th>
+                    <th>SL</th>
+                    <th>Mức độ</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày lập</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in my_reports %}
+                <tr>
+                    <td><strong>#{{ r.id }}</strong></td>
+                    <td>{{ r.item.name }}</td>
+                    <td>{{ r.quantity }}</td>
+                    <td>{{ r.get_severity_display }}</td>
+                    <td>
+                        {% if r.status == 'PENDING' %}<span class="badge-status badge-pending">Chờ duyệt</span>
+                        {% elif r.status == 'APPROVED' %}<span class="badge-status badge-approved">Đã duyệt</span>
+                        {% else %}<span class="badge-status badge-rejected">Từ chối</span>{% endif %}
+                    </td>
+                    <td>{{ r.created_at|date:"d/m/Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" style="text-align:center; color:#888; padding: 24px;">Bạn chưa lập phiếu báo hỏng nào.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -19,11 +19,15 @@
         <ul class="nav nav-pills flex-column mb-auto gap-2">
             <li class="nav-item"><a href="/management/dashboard/" class="nav-link text-white">📊 Tổng quan (Dashboard)</a></li>
             <li class="nav-item"><a href="/inventory/" class="nav-link text-white">📦 Kho & Nhập hàng</a></li>
-            <li class="nav-item"><a href="/services/" class="nav-link text-white {% if request.resolver_match.app_name == 'services' %}active{% endif %}" style="{% if request.resolver_match.app_name == 'services' %}background:#D4A64F;color:#3B2A10 !important;font-weight:600{% endif %}">💆‍♀️ Dịch vụ & Định mức BOM</a></li>
-            <!-- UC_4: Điều phối ca (dòng mới thêm) -->
+            <li class="nav-item">
+                <a href="/services/" class="nav-link text-white {% if request.resolver_match.app_name == 'services' %}active{% endif %}" style="{% if request.resolver_match.app_name == 'services' %}background:#D4A64F;color:#3B2A10 !important;font-weight:600{% endif %}">
+                    💆‍♀️ Dịch vụ & Định mức BOM
+                </a>
+            </li>
+            <!-- UC_4: Điều phối ca -->
             <li class="nav-item"><a href="{% url 'shifts:dashboard' %}" class="nav-link text-white {% if request.resolver_match.app_name == 'shifts' %}active{% endif %}" style="{% if request.resolver_match.app_name == 'shifts' %}background:#D4A64F;color:#3B2A10 !important;font-weight:600{% endif %}">🛎️ Điều phối ca</a></li>
             <li class="nav-item"><a href="/operations/" class="nav-link text-white">🧺 Vận hành & Khăn</a></li>
-            <li class="nav-item"><a href="/management/" class="nav-link text-white">⚠️ Báo hỏng & Đặt hàng PO</a></li>
+            <li class="nav-item"><a href="{% url 'uc6_dashboard' %}" class="nav-link text-white">⚠️ Báo hỏng & Đặt hàng PO</a></li>
             <li class="nav-item mt-4"><a href="/admin/" class="nav-link text-info">⚙️ Trang Quản trị Admin</a></li>
 
             {% if request.user.is_superuser or request.user.role == 'QUAN_LY' or request.user.role == 'ADMIN' %}

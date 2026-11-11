@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<style>
+    .uc6-wrapper { background: #FAF6F0; min-height: calc(100vh - 40px); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.04); font-family: 'Segoe UI', sans-serif; }
+    .uc6-topbar { background: linear-gradient(90deg, #C8963E 0%, #D6A45B 100%); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; color: #2B2118; }
+    .uc6-top-btn { background: rgba(255,255,255,0.75); border: none; padding: 6px 16px; border-radius: 999px; font-weight: 600; font-size: 13px; color: #3A2A18; text-decoration: none; margin-right: 8px; transition: 0.2s; }
+    .uc6-top-btn:hover { background: #fff; color: #183B3A; }
+
+    .uc6-brand-box { background: rgba(255,255,255,0.6); border-radius: 10px; padding: 6px 14px; display: flex; align-items: center; gap: 10px; border: 1px solid #E6C88A; }
+    .uc6-brand-box img { height: 35px; object-fit: contain; }
+    .uc6-brand-text h5 { margin: 0; font-size: 13px; font-weight: 800; text-transform: uppercase; color: #3B2A10; }
+    .uc6-brand-text small { font-size: 9px; text-transform: uppercase; color: #5C4320; display: block; }
+
+    .uc6-user-badge { background: rgba(255,255,255,0.35); padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+
+    .uc6-body { padding: 24px 30px; }
+    .uc6-pill-nav { background: #F1E4C8; padding: 8px 12px; border-radius: 999px; display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+    .uc6-pill-link { padding: 8px 20px; border-radius: 999px; font-size: 14px; font-weight: 600; color: #3D2E1E; text-decoration: none; transition: 0.2s; }
+    .uc6-pill-link:hover { background: rgba(122, 82, 30, 0.12); color: #2B2118; }
+    .uc6-pill-link.active { background: #7A521E; color: #fff; box-shadow: 0 2px 8px rgba(122, 82, 30, 0.3); }
+
+    .uc6-subtitle { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #9C7A44; margin-bottom: 4px; }
+    .uc6-title { font-size: 28px; font-weight: 800; color: #1F1912; margin-bottom: 6px; }
+    .uc6-desc { color: #786B59; font-size: 14px; margin-bottom: 22px; }
+
+    .uc6-card { background: #FFFFFF; border: 1px solid #EFE4CE; border-radius: 16px; padding: 22px 24px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+    .uc6-card h4 { font-size: 18px; font-weight: 700; color: #2B2118; margin-bottom: 16px; }
+
+    .uc6-table { width: 100%; border-collapse: collapse; }
+    .uc6-table th { background: #F7ECDA; color: #4A3720; font-size: 13px; font-weight: 700; padding: 12px 14px; text-align: left; }
+    .uc6-table td { padding: 12px 14px; border-bottom: 1px solid #F3EAD8; font-size: 14px; color: #2E2418; vertical-align: middle; }
+
+    .btn-gold { background: #7A521E; color: #fff; border: none; padding: 10px 22px; border-radius: 999px; font-weight: 600; font-size: 14px; cursor: pointer; text-decoration: none; display: inline-block; }
+    .btn-gold:hover { background: #5E3E15; color: #fff; }
+    .btn-outline-gold { background: #fff; color: #4A3720; border: 1.5px solid #8C6D3F; padding: 9px 20px; border-radius: 999px; font-weight: 600; font-size: 14px; cursor: pointer; text-decoration: none; display: inline-block; }
+    .btn-outline-gold:hover { background: #F7ECDA; }
+
+    .badge-status { padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .badge-pending { background: #FFF3CD; color: #856404; }
+    .badge-approved { background: #D4EDDA; color: #155724; }
+    .badge-rejected { background: #F8D7DA; color: #721C24; }
+    .form-control-spa { width: 100%; padding: 10px 14px; border: 1px solid #DFCFAF; border-radius: 10px; background: #FDFBF7; font-size: 14px; margin-bottom: 14px; }
+    .form-label-spa { font-weight: 600; font-size: 13px; color: #4A3720; margin-bottom: 6px; display: block; }
+</style>
+
+<div class="uc6-wrapper">
+    <div class="uc6-topbar">
+        <div style="display: flex; align-items: center;">
+            <a href="javascript:history.back()" class="uc6-top-btn">← Quay lại</a>
+            <a href="{% url 'management_home' %}" class="uc6-top-btn">🏠 Trang chủ</a>
+
+            <div style="width: 1px; height: 32px; background: #B8862F; margin: 0 12px;"></div>
+
+            <!-- Hộp chứa hình ảnh logo và tên -->
+            <div class="uc6-brand-box">
+                <img src="{% static 'images/logo (3).png' %}" alt="Sunbaby Logo">
+                <div class="uc6-brand-text">
+                    <h5>Sun Baby</h5>
+                    <small>Relaxing Massage</small>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: right;">
+            <h5 style="margin:0; font-size:15px; font-weight:800; color:#2B2118; text-transform:uppercase;">BÁO HỎNG & ĐẶT HÀNG PO</h5>
+            <small style="font-size:11px; color:#4E3B24; font-weight:600; text-transform:uppercase;">SUN BABY · SERVICE OPERATIONS</small>
+        </div>
+    </div>
+
+    <div class="uc6-body">
+        <div class="uc6-pill-nav">
+            {% if request.user.role == 'ADMIN' or request.user.role == 'MANAGER' or request.user.is_superuser %}
+                <a href="{% url 'uc6_dashboard' %}" class="uc6-pill-link {% if active_tab == 'dashboard' %}active{% endif %}">📊 Dashboard</a>
+                <a href="{% url 'damage_create' %}" class="uc6-pill-link {% if active_tab == 'create' %}active{% endif %}">📝 Tạo phiếu báo hỏng</a>
+                <a href="{% url 'damage_review_list' %}" class="uc6-pill-link {% if active_tab == 'review' %}active{% endif %}">✅ Duyệt phiếu báo hỏng</a>
+                <a href="{% url 'po_list_create' %}" class="uc6-pill-link {% if active_tab == 'po' %}active{% endif %}">🛒 Đơn mua PO</a>
+            {% else %}
+                <a href="{% url 'damage_create' %}" class="uc6-pill-link active">📝 Tạo phiếu báo hỏng</a>
+            {% endif %}
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; background: {% if message.tags == 'error' %}#F8D7DA{% elif message.tags == 'warning' %}#FFF3CD{% else %}#D4EDDA{% endif %}; color: #2B2118; font-weight: 600;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block uc6_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

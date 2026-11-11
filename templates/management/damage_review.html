@@ -1,0 +1,95 @@
+{% extends "management/_uc6_base.html" %}
+{% block uc6_content %}
+<div class="uc6-subtitle">KIỂM SOÁT HAO HỤT & ĐỒNG BỘ TỒN KHO</div>
+<div class="uc6-title">Duyệt phiếu báo hỏng</div>
+<div class="uc6-desc">Xem xét phiếu báo hỏng từ nhân viên. Khi duyệt, hệ thống tự động trừ kho khả dụng, cập nhật vải hỏng và gợi ý lập PO.</div>
+
+<div style="margin-bottom: 18px; display: flex; gap: 10px;">
+    <a href="?status=PENDING" class="{% if status_filter == 'PENDING' %}btn-gold{% else %}btn-outline-gold{% endif %}">Chờ duyệt ({{ counts.pending }})</a>
+    <a href="?status=APPROVED" class="{% if status_filter == 'APPROVED' %}btn-gold{% else %}btn-outline-gold{% endif %}">Đã duyệt ({{ counts.approved }})</a>
+    <a href="?status=REJECTED" class="{% if status_filter == 'REJECTED' %}btn-gold{% else %}btn-outline-gold{% endif %}">Từ chối ({{ counts.rejected }})</a>
+    <a href="?status=ALL" class="{% if status_filter == 'ALL' %}btn-gold{% else %}btn-outline-gold{% endif %}">Tất cả</a>
+</div>
+
+<div style="display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px;">
+    <div class="uc6-card">
+        <h4>Danh sách phiếu báo hỏng</h4>
+        <table class="uc6-table">
+            <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Vật tư / Đồ vải</th>
+                    <th>Số lượng</th>
+                    <th>Người lập</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reports %}
+                <tr style="{% if selected_report and selected_report.id == r.id %}background:#FDF5E6;{% endif %}">
+                    <td><strong>#{{ r.id }}</strong></td>
+                    <td>{{ r.item.name }}</td>
+                    <td><strong>{{ r.quantity }}</strong></td>
+                    <td>{{ r.reported_by.full_name|default:r.reported_by.username }}</td>
+                    <td>
+                        {% if r.status == 'PENDING' %}<span class="badge-status badge-pending">Chờ duyệt</span>
+                        {% elif r.status == 'APPROVED' %}<span class="badge-status badge-approved">Đã duyệt</span>
+                        {% else %}<span class="badge-status badge-rejected">Từ chối</span>{% endif %}
+                    </td>
+                    <td>
+                        <a href="?status={{ status_filter }}&selected={{ r.id }}" class="btn-outline-gold" style="padding:5px 12px; font-size:12px;">Xem chi tiết</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" style="text-align:center; color:#888; padding: 24px;">Không có phiếu báo hỏng nào.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="uc6-card">
+        {% if selected_report %}
+            <h4>Chi tiết phiếu báo hỏng #{{ selected_report.id }}</h4>
+            <p><strong>Đối tượng:</strong> {{ selected_report.item.name }}</p>
+            <p><strong>Tồn kho hiện tại:</strong> {{ selected_report.item.stock }}</p>
+            <p><strong>Số lượng hỏng:</strong> <span style="color:#C0392B; font-weight:700;">{{ selected_report.quantity }}</span></p>
+            <p><strong>Mức độ hỏng:</strong> {{ selected_report.get_severity_display }}</p>
+            <p><strong>Người lập:</strong> {{ selected_report.reported_by.full_name|default:selected_report.reported_by.username }} ({{ selected_report.created_at|date:"d/m/Y H:i" }})</p>
+            <p><strong>Mô tả:</strong> {{ selected_report.reason }}</p>
+
+            {% if selected_report.evidence_image %}
+                <div style="margin: 12px 0;">
+                    <strong>Ảnh minh chứng:</strong><br>
+                    <img src="{{ selected_report.evidence_image.url }}" style="max-width:100%; max-height:180px; border-radius:10px; margin-top:6px;">
+                </div>
+            {% endif %}
+
+            {% if selected_report.status == 'PENDING' %}
+                <hr style="border-color:#F1E4C8; margin: 16px 0;">
+                <form method="post" action="{% url 'damage_review_action' selected_report.id %}">
+                    {% csrf_token %}
+                    <button type="submit" name="action" value="approve" class="btn-gold" style="width:100%; margin-bottom:12px;">
+                        ✔ Duyệt phiếu (Trừ kho & Cập nhật vải hỏng)
+                    </button>
+                    <label class="form-label-spa">Lý do từ chối:</label>
+                    <input type="text" name="reject_reason" class="form-control-spa" placeholder="Nhập lý do từ chối...">
+                    <button type="submit" name="action" value="reject" class="btn-outline-gold" style="width:100%; color:#A93226; border-color:#A93226;">
+                        ✖ Từ chối phiếu
+                    </button>
+                </form>
+            {% else %}
+                <hr style="border-color:#F1E4C8; margin: 16px 0;">
+                <p><strong>Người xử lý:</strong> {{ selected_report.approved_by.full_name|default:selected_report.approved_by.username }} ({{ selected_report.reviewed_at|date:"d/m/Y H:i" }})</p>
+                {% if selected_report.status == 'APPROVED' %}
+                    <a href="{% url 'po_list_create' %}?from_damage={{ selected_report.id }}" class="btn-gold" style="width:100%; text-align:center; margin-top:8px;">
+                        🛒 Tạo nhanh Đơn mua PO bù vật tư này
+                    </a>
+                {% endif %}
+            {% endif %}
+        {% else %}
+            <p style="color:#888; text-align:center; padding: 30px 0;">Chọn một phiếu bên trái để xem chi tiết.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
