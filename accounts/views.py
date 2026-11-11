@@ -45,10 +45,11 @@ def login_view(request):
 
 # Đăng xuất hệ thống
 def logout_view(request):
-    # Đăng nhập thành công -> Cấp phiên và chuyển hướng vào Dashboard tổng quan
-    login(request, user)
-    messages.success(request, f"Xin chào {user.full_name or user.username}!")
-    return redirect('dashboard')  # Sửa từ đường dẫn tĩnh thành tên name='dashboard'
+    @login_required(login_url='login')
+    def logout_view(request):
+        logout(request)
+        messages.info(request, "Bạn đã đăng xuất thành công.")
+        return redirect('login')
 
 # UC_1: Danh sách tài khoản & Quản lý phân quyền (Chỉ Quản lý / Admin)
 @login_required(login_url='login')
