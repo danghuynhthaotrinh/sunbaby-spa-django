@@ -11,4 +11,5 @@ urlpatterns = [
     path("goi/<int:pk>/doi-trang-thai/", views.package_toggle, name="package_toggle"),
     path("goi/<int:pk>/bom/", views.bom_config, name="bom_config"),
     path("gia-von/", views.cost_list, name="cost_list"),
+    path("gia-von/<int:pk>/", views.cost_detail, name="cost_detail"),
 ]
