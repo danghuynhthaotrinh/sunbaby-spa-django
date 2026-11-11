@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'operations/operations.css' %}">
+<script src="{% static 'operations/operations.js' %}" defer></script>
+
+<style>
+    .ops-wrapper {
+        background: #FAF6F0;
+        min-height: calc(100vh - 48px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    }
+    .ops-topbar {
+        background: #D09D44;
+        padding: 12px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 2px solid #B8862F;
+    }
+    .ops-top-btn {
+        background: #E8C888;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 14px;
+        color: #3B2A10;
+        text-decoration: none;
+        margin-right: 10px;
+        transition: 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .ops-top-btn:hover {
+        background: #F3DCAC;
+        color: #183B3A;
+    }
+    .ops-brand-box {
+        background: #E8C888;
+        border-radius: 10px;
+        padding: 6px 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid #C4923C;
+    }
+    .ops-brand-box img {
+        height: 34px;
+        object-fit: contain;
+    }
+    .ops-brand-title h4 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: #3B2A10;
+    }
+    .ops-brand-title small {
+        font-size: 11px;
+        letter-spacing: 1px;
+        color: #5C4320;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+    .ops-wrapper .workspace {
+        max-width: 100%;
+        padding: 24px 30px;
+    }
+</style>
+
+<div class="ops-wrapper">
+    <!-- Thanh tiêu đề Vàng đồng + Hộp Logo Sun Baby đồng bộ -->
+    <div class="ops-topbar">
+        <div style="display: flex; align-items: center;">
+            <a href="javascript:history.back()" class="ops-top-btn">← Quay lại</a>
+            <a href="/management/dashboard/" class="ops-top-btn">🏠 Trang chủ</a>
+            <div style="width: 1px; height: 34px; background: #B8862F; margin: 0 14px;"></div>
+            <div class="ops-brand-box">
+                <img src="{% static 'images/logo (3).png' %}" alt="Sunbaby Logo">
+                <div>
+                    <div style="font-size: 13px; font-weight: 800; color: #3B2A10; text-transform: uppercase; line-height: 1.2;">SUN BABY</div>
+                    <div style="font-size: 9px; color: #5C4320; text-transform: uppercase;">Relaxing Massage</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ops-brand-title" style="text-align: right;">
+            <h4>QUẢN LÝ ĐỒ VẢI & VẬN HÀNH</h4>
+            <small>SUN BABY · SERVICE OPERATIONS</small>
+        </div>
+    </div>
+
+    <!-- Nội dung chính của phân hệ Đồ vải -->
+    <main class="workspace" id="main-content">
+        <div class="page-heading">
+            <div>
+                <p class="eyebrow">PHÂN HỆ VẬN HÀNH</p>
+                <h1>Quản lý đồ vải</h1>
+                <p>Theo dõi luân chuyển, xuất giặt và đối soát đồ vải của spa.</p>
+            </div>
+            <div class="heading-note">
+                <span class="status-dot"></span> Tồn kho theo 4 trạng thái
+            </div>
+        </div>
+
+        {% if messages %}
+        <div class="toast-stack" role="status" aria-live="polite">
+            {% for message in messages %}
+            <div class="toast {{ message.tags }}">
+                <span>✓</span>{{ message }}
+                <button type="button" aria-label="Đóng thông báo" data-dismiss-toast>×</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <nav class="tabs" aria-label="Quản lý đồ vải">
+            <a href="{% url 'operations_home' %}" {% if tab == 'board' %}class="selected" aria-current="page"{% endif %}><span>01</span> Linen Board</a>
+            <a href="{% url 'operations_home' %}?tab=send" {% if tab == 'send' %}class="selected" aria-current="page"{% endif %}><span>02</span> Lập phiếu xuất giặt</a>
+            <a href="{% url 'operations_home' %}?tab=receive" {% if tab == 'receive' %}class="selected" aria-current="page"{% endif %}><span>03</span> Nhận đồ sạch & Đối soát</a>
+        </nav>
+
+        {% block operations_content %}{% endblock %}
+
+        <footer class="page-footer">
+            <span>SUN BABY · Quản lý vận hành spa</span>
+            <span>Đơn vị đồ vải: cái</span>
+        </footer>
+    </main>
+</div>
+
+<dialog id="shipment-dialog" aria-labelledby="dialog-title" {% if modal %}data-initial-open{% endif %}>
+    {% if modal %}
+        {% include 'operations/_shipment_modal.html' with shipment=modal.shipment editing=modal.editing receipt_form=modal.receipt_form receive_lines=modal.receive_lines details=modal.details %}
+    {% endif %}
+</dialog>
+<div id="network-message" class="network-message" role="alert" hidden></div>
+{% endblock %}

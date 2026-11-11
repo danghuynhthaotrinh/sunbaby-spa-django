@@ -1,6 +1,38 @@
 {% extends "base.html" %}
-{% load humanize %}
+{% load static %}
 {% block content %}
+<style>
+    .inv-topbar { background: #D09D44; padding: 14px 24px; border-radius: 16px 16px 0 0; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #B8862F; margin-bottom: 20px; }
+    .inv-top-btn { background: #E8C888; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 600; font-size: 14px; color: #3B2A10; text-decoration: none; margin-right: 10px; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+    .inv-top-btn:hover { background: #F3DCAC; color: #183B3A; }
+    .inv-brand-box { background: #E8C888; border-radius: 10px; padding: 6px 14px; display: flex; align-items: center; gap: 10px; border: 1px solid #C4923C; }
+    .inv-brand-box img { height: 34px; object-fit: contain; }
+    .inv-brand-title h4 { margin: 0; font-size: 16px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: #3B2A10; }
+    .inv-brand-title small { font-size: 11px; letter-spacing: 1px; color: #5C4320; text-transform: uppercase; font-weight: 600; }
+</style>
+
+<!-- Thanh tiêu đề Vàng đồng đồng bộ toàn hệ thống -->
+<div class="inv-topbar">
+    <div style="display: flex; align-items: center;">
+        <a href="javascript:history.back()" class="inv-top-btn">← Quay lại</a>
+        <a href="/management/dashboard/" class="inv-top-btn">🏠 Trang chủ</a>
+        <div style="width: 1px; height: 34px; background: #B8862F; margin: 0 14px;"></div>
+        <div class="inv-brand-box">
+            <img src="{% static 'images/logo (3).png' %}" alt="Sunbaby Logo">
+            <div>
+                <div style="font-size: 13px; font-weight: 800; color: #3B2A10; text-transform: uppercase;">SUN BABY</div>
+                <div style="font-size: 9px; color: #5C4320; text-transform: uppercase;">Relaxing Massage</div>
+            </div>
+        </div>
+    </div>
+    <div class="inv-brand-title" style="text-align: right;">
+        <h4>QUẢN LÝ VẬT TƯ & NHẬP KHO</h4>
+        <small>SUN BABY · INVENTORY & PROCUREMENT</small>
+    </div>
+</div>
+
+
+{% load humanize %}
 <style>
 .inventory-page{--gold:#C8963E;--cream:#fbf6eb;--brown:#49351f;color:var(--brown)}.inventory-page .nav-pills .nav-link{border-radius:22px;color:#674719;background:#fff;border:1px solid #eadfc9;margin:3px}.inventory-page .nav-pills .nav-link.active,.inventory-page .btn-gold{background:#C8963E;color:#fff}.inventory-page .card{border:0;border-radius:13px}.inventory-page .stat{background:#fffaf0;border:1px solid #eadfc9;border-radius:12px;padding:15px}.inventory-page .stat strong{display:block;font-size:24px}.inventory-page .table-responsive{border-radius:10px}.inventory-page th{white-space:nowrap;background:#fcf8f0}.inventory-page td,.inventory-page th{vertical-align:middle}.inventory-page .stock{display:inline-block;background:#e4f3e8;color:#28683d;border-radius:16px;padding:3px 9px}.inventory-page .stock.low{background:#ffe4e1;color:#a33}.inventory-page .btn-sm{padding:3px 8px}.inventory-page .btn-delete{background:#fbe2df;color:#a33;border:0}
 </style>

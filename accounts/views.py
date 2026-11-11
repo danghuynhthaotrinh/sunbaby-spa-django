@@ -45,12 +45,9 @@ def login_view(request):
 
 # Đăng xuất hệ thống
 def logout_view(request):
-    @login_required(login_url='login')
-    def logout_view(request):
-        logout(request)
-        messages.info(request, "Bạn đã đăng xuất thành công.")
-        return redirect('login')
-
+    logout(request)
+    messages.info(request, "Đã đăng xuất tài khoản.")
+    return redirect('login')
 # UC_1: Danh sách tài khoản & Quản lý phân quyền (Chỉ Quản lý / Admin)
 @login_required(login_url='login')
 def user_list_view(request):
