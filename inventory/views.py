@@ -15,7 +15,7 @@ from .models import Item, Supplier, GoodsReceipt, GoodsReceiptDetail, TheKho, CA
 def access(view):
     @login_required
     def wrapped(request, *args, **kwargs):
-        if getattr(request.user, "role", "") not in ("MANAGER", "ADMIN"):
+        if not request.user.is_superuser and getattr(request.user, "role", "") not in ("MANAGER", "QUAN_LY", "THU_KHO", "ADMIN"):
             raise PermissionDenied
         return view(request, *args, **kwargs)
     return wrapped

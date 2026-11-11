@@ -1,0 +1,19 @@
+{% load static %}<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quản lý đồ vải · Sunbaby Spa</title>
+<link rel="stylesheet" href="{% static 'operations/operations.css' %}">
+<script src="{% static 'operations/operations.js' %}" defer></script></head>
+<body>
+<header class="masthead"><div class="brand"><span class="brand-mark" aria-hidden="true">S</span><div><a href="{% url 'operations_home' %}">SUN BABY<span>SPA & WELLNESS</span></a></div></div><div class="header-right"><span class="user-dot" aria-hidden="true"></span><span>{{ request.user.full_name|default:request.user.username }}<small>{{ request.user.get_role_display }}</small></span><form method="post" action="{% url 'operations_logout' %}">{% csrf_token %}<button type="submit">Đăng xuất</button></form></div></header>
+<nav class="app-nav" aria-label="Phân hệ"><a href="/management/dashboard/">Tổng quan</a><a href="/inventory/">Kho & Nhập hàng</a><a href="/services/">Dịch vụ & Định mức</a><a href="{% url 'operations_home' %}" class="active" aria-current="page">Vận hành & Đồ vải</a><a href="/management/">Báo hỏng & Mua hàng</a><a href="/admin/" class="admin-link">Quản trị ↗</a></nav>
+<main class="workspace" id="main-content">
+<div class="page-heading"><div><p class="eyebrow">PHÂN HỆ VẬN HÀNH</p><h1>Quản lý đồ vải</h1><p>Theo dõi luân chuyển, xuất giặt và đối soát đồ vải của spa.</p></div><div class="heading-note"><span class="status-dot"></span> Tồn kho theo 4 trạng thái</div></div>
+{% if messages %}<div class="toast-stack" role="status" aria-live="polite">{% for message in messages %}<div class="toast {{ message.tags }}"><span>✓</span>{{ message }}<button type="button" aria-label="Đóng thông báo" data-dismiss-toast>×</button></div>{% endfor %}</div>{% endif %}
+<nav class="tabs" aria-label="Quản lý đồ vải"><a href="{% url 'operations_home' %}" {% if tab == 'board' %}class="selected" aria-current="page"{% endif %}><span>01</span> Linen Board</a><a href="{% url 'operations_home' %}?tab=send" {% if tab == 'send' %}class="selected" aria-current="page"{% endif %}><span>02</span> Lập phiếu xuất giặt</a><a href="{% url 'operations_home' %}?tab=receive" {% if tab == 'receive' %}class="selected" aria-current="page"{% endif %}><span>03</span> Nhận đồ sạch & Đối soát</a></nav>
+{% block operations_content %}{% endblock %}
+<footer class="page-footer"><span>SUN BABY · Quản lý vận hành spa</span><span>Đơn vị đồ vải: cái</span></footer>
+</main>
+<dialog id="shipment-dialog" aria-labelledby="dialog-title" {% if modal %}data-initial-open{% endif %}>{% if modal %}{% include 'operations/_shipment_modal.html' with shipment=modal.shipment editing=modal.editing receipt_form=modal.receipt_form receive_lines=modal.receive_lines details=modal.details %}{% endif %}</dialog>
+<div id="network-message" class="network-message" role="alert" hidden></div>
+</body></html>

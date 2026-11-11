@@ -23,7 +23,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('management/', include('management.urls')),
     path('inventory/', include('inventory.urls')),
-    path('kho/', include('kho.urls')),
+    path('kho/', lambda request: redirect('inventory_home')),
     path('services/', include('services.urls')),
     path('operations/', include('operations.urls')),
     path('', lambda request: redirect('login')),
